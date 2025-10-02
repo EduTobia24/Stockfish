@@ -1,0 +1,65 @@
+{
+  "best_formula": "complexity                                                      87\nloss                                                      0.065723\nequation         (x23 - square(x538 + x181)) + (((((x428 + ((sq...\nscore                                                     0.060235\nsympy_format     x23 - x340 - 0.61233926*x428 + 0.61233926*x635...\nlambda_format    PySRFunction(X=>x23 - x340 - 0.61233926*x428 +...\nName: 38, dtype: object",
+  "training_r2": 0.9848191465488715,
+  "rmse": 0.2563654300285976,
+  "mae": 0.19738049860298634,
+  "total_features": 782,
+  "features_used": 6,
+  "used_feature_names": [
+    "WP_h3",
+    "WN_f7",
+    "BB_d8",
+    "BN_c4",
+    "WK_e3",
+    "BP_e6"
+  ],
+  "piece_features": [
+    {
+      "name": "WP_h3",
+      "piece": "WP",
+      "square": "h3",
+      "color": "White",
+      "activity": 0.0560000017285347
+    },
+    {
+      "name": "WN_f7",
+      "piece": "WN",
+      "square": "f7",
+      "color": "White",
+      "activity": 0.0
+    },
+    {
+      "name": "BB_d8",
+      "piece": "BB",
+      "square": "d8",
+      "color": "Black",
+      "activity": 0.0560000017285347
+    },
+    {
+      "name": "BN_c4",
+      "piece": "BN",
+      "square": "c4",
+      "color": "Black",
+      "activity": 0.0
+    },
+    {
+      "name": "WK_e3",
+      "piece": "WK",
+      "square": "e3",
+      "color": "White",
+      "activity": 0.0
+    },
+    {
+      "name": "BP_e6",
+      "piece": "BP",
+      "square": "e6",
+      "color": "Black",
+      "activity": 0.1940000057220459
+    }
+  ],
+  "game_state_features": [],
+  "n_positions": 500,
+  "feature_usage_efficiency": 0.0076726342710997444,
+  "model_complexity": 87,
+  "max_complexity_used": 1000
+}
