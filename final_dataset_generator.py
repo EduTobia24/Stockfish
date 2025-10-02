@@ -263,7 +263,8 @@ class FinalStockfishDatasetGenerator:
             if (analysis and 
                 analysis.get('best_move') and 
                 analysis.get('best_move') != 'none' and
-                analysis.get('evaluation') is not None):
+                analysis.get('evaluation') is not None and
+                analysis.get('depth', 0) >= 1):  # Require at least depth 1
                 
                 # Add metadata
                 analysis['position_id'] = positions_generated + 1
@@ -294,7 +295,26 @@ class FinalStockfishDatasetGenerator:
             else:
                 failed_analyses += 1
                 depth = analysis.get('depth', 0) if analysis else 0
-                print(f"❌ Failed (d{depth})")
+                best_move = analysis.get('best_move', 'none') if analysis else 'none'
+                eval_val = analysis.get('evaluation') if analysis else None
+                
+                failure_reason = "unknown"
+                if not analysis:
+                    failure_reason = "no_analysis"
+                elif not analysis.get('best_move') or analysis.get('best_move') == 'none':
+                    failure_reason = "no_move"
+                elif analysis.get('evaluation') is None:
+                    failure_reason = "no_eval"
+                elif analysis.get('depth', 0) < 1:
+                    failure_reason = f"low_depth({depth})"
+                
+                print(f"❌ Failed ({failure_reason})")
+                
+                # Debug info for first few failures
+                if failed_analyses <= 3:
+                    print(f"    Debug: move={best_move}, eval={eval_val}, depth={depth}")
+                    if analysis and 'raw_output' in analysis:
+                        print(f"    Output sample: {analysis['raw_output'][:100]}...")
                 
                 if failed_analyses > 100:
                     print(f"\n⚠️  Too many failures ({failed_analyses}). Stopping.")
