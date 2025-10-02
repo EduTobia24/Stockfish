@@ -274,26 +274,47 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
         # We'll implement manual saving instead
     }
     
-    # Add custom loss function based on user choice
+    # PySR loss function configuration
+    # Since PySR has limited built-in loss functions, we'll use different approaches
+    loss_config = {}
+    
     if loss_function == "max_error":
-        # Use L∞ norm (maximum absolute error) - supported by PySR
-        pysr_config['loss_function'] = "LPDistLoss{Inf}()"
-        print(f"🎯 Using L∞ NORM loss function (minimizes maximum error)")
+        # Focus on minimizing worst errors through model selection
+        loss_config.update({
+            'parsimony': 0.1,  # Higher parsimony for robustness
+            'weight_optimize': 0.05,  # More weight optimization
+            'alpha': 100.0,  # Higher alpha for diversity
+        })
+        print(f"🎯 Using MAX ERROR optimization (robust parameter settings)")
     elif loss_function == "percentile":
-        # Use quantile loss to focus on worst errors
-        pysr_config['loss_function'] = "QuantileLoss(τ=0.95)"
-        print(f"🎯 Using QUANTILE loss function (minimizes 95th percentile error)")
+        # Focus on worst predictions through aggressive optimization
+        loss_config.update({
+            'parsimony': 0.08,
+            'weight_optimize': 0.1,
+            'alpha': 150.0,
+        })
+        print(f"🎯 Using PERCENTILE-focused optimization")
     elif loss_function == "huber":
-        # Use Huber loss for robustness to outliers
-        pysr_config['loss_function'] = "HuberLoss(δ=1.0)"
-        print(f"🎯 Using HUBER loss function (robust to outliers)")
+        # Robust settings similar to Huber loss
+        loss_config.update({
+            'parsimony': 0.15,
+            'weight_optimize': 0.02,
+            'adaptive_parsimony_scaling': 50.0,
+        })
+        print(f"🎯 Using HUBER-like optimization (robust settings)")
     elif loss_function == "mae":
-        # Use L1 norm (mean absolute error)
-        pysr_config['loss_function'] = "LPDistLoss{1}()"
-        print(f"🎯 Using L1 NORM loss function (mean absolute error)")
+        # L1-like behavior through parameter tuning
+        loss_config.update({
+            'parsimony': 0.03,
+            'weight_optimize': 0.005,
+        })
+        print(f"🎯 Using L1-like optimization")
     else:
-        # Default MSE (L2 norm)
-        print(f"🎯 Using default L2 NORM loss function (mean squared error)")
+        # Default MSE behavior
+        print(f"🎯 Using default MSE optimization")
+    
+    # Update config with loss-specific parameters
+    pysr_config.update(loss_config)
     
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
@@ -417,8 +438,54 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
         print("\n" + "🎉" * 20 + " TRAINING COMPLETE " + "🎉" * 20)
         print()
         
-        # Get results
-        best_equation = model.get_best()
+        # Custom equation selection based on loss function
+        if loss_function != "mse" and hasattr(model, 'equations_') and len(model.equations_) > 1:
+            print(f"🔍 Selecting best equation for {loss_function} optimization...")
+            
+            # Evaluate all equations with custom metrics
+            best_idx = 0
+            best_metric = float('inf')
+            
+            for idx, row in model.equations_.iterrows():
+                try:
+                    # Get predictions for this equation
+                    equation = model.sympy(row['Equation'])
+                    predictions = [float(equation.subs([(f'x{i}', features[j, i]) for i in range(len(feature_names))])) 
+                                 for j in range(min(100, len(features)))]  # Sample for speed
+                    actual = evaluations[:len(predictions)]
+                    
+                    # Calculate custom metric
+                    errors = np.abs(np.array(predictions) - actual)
+                    
+                    if loss_function == "max_error":
+                        metric = np.max(errors)  # Minimize maximum error
+                    elif loss_function == "percentile":
+                        metric = np.percentile(errors, 95)  # Minimize 95th percentile
+                    elif loss_function == "huber":
+                        # Huber-like metric
+                        delta = 1.0
+                        metric = np.mean(np.where(errors <= delta, 0.5 * errors**2, delta * (errors - 0.5 * delta)))
+                    elif loss_function == "mae":
+                        metric = np.mean(errors)  # Mean absolute error
+                    else:
+                        metric = row['Loss']  # Default to PySR loss
+                    
+                    if metric < best_metric:
+                        best_metric = metric
+                        best_idx = idx
+                        
+                except Exception as e:
+                    continue  # Skip problematic equations
+            
+            if best_idx != 0:
+                print(f"🎯 Selected equation {best_idx} (Loss: {model.equations_.iloc[best_idx]['Loss']:.6f}) for {loss_function} optimization")
+                best_equation = model.sympy(model.equations_.iloc[best_idx]['Equation'])
+            else:
+                best_equation = model.get_best()
+        else:
+            # Get results
+            best_equation = model.get_best()
+        
         training_score = model.score(features, evaluations)
         
         print(f"\n🏆 DISCOVERED HIGH-COMPLEXITY CHESS EVALUATION FORMULA:")

@@ -1,0 +1,23 @@
+import re
+import matplotlib.pyplot as plt
+
+# Path to your text file
+filename = "evals.txt"
+
+# Read the file and extract numbers
+with open(filename, "r") as f:
+    text = f.read()
+
+# Use regex to find all floating-point numbers after "evaluation":
+values = [float(x) for x in re.findall(r'\"evaluation":\s*([-+]?\d*\.?\d+)', text)]
+
+print("Extracted values:", values)
+
+# Plot histogram
+plt.hist(values, bins=1000, edgecolor="black")
+plt.xlabel("Evaluation Value")
+plt.ylabel("Frequency")
+plt.title("Histogram of Evaluations")
+plt.grid(True, linestyle="--", alpha=0.6)
+plt.show()
+
