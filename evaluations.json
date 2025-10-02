@@ -20711,5 +20711,1508 @@
     ],
     "status": "success",
     "error": null
+  },
+  {
+    "fen": "rnbqkb1r/1p1p1ppp/4pn2/p1p5/2P3P1/P6N/1P1PPP1P/RNBQKB1R w KQkq - 1 5",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.0824776,
+    "evaluation": 0.03,
+    "depth": 24,
+    "nodes": 7342595,
+    "time": 5.001713275909424,
+    "best_move": "g4g5",
+    "pv": [
+      "g4g5",
+      "f6h5",
+      "b1c3",
+      "b8c6",
+      "d2d3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r5nr/pb1p1Np1/2p2k1p/qN6/1b2p3/3P4/1P1P1PPP/2BQKBR1 w - - 1 15",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.082221,
+    "evaluation": -0.97,
+    "depth": 22,
+    "nodes": 7590782,
+    "time": 5.004862308502197,
+    "best_move": "b5d6",
+    "pv": [
+      "b5d6",
+      "b4d6",
+      "f7d6",
+      "a5b4",
+      "d6e4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnb1k3/2ppn3/5p2/1p3pp1/pP1BK3/3P4/PP5P/RNQ3NR w q - 0 19",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0820334,
+    "evaluation": 7.39,
+    "depth": 21,
+    "nodes": 20595738,
+    "time": 4.149289608001709,
+    "best_move": "e4e3",
+    "pv": [
+      "e4e3",
+      "b8c6",
+      "g1e2",
+      "e8f7",
+      "e3d2"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "5bnr/p4kpp/P3p3/2p5/8/2PK2P1/4BP1P/1NBQ3R w - - 0 15",
+    "position_type": "material_imbalances",
+    "generated_at": 1759410556.0830095,
+    "evaluation": 9.88,
+    "depth": 21,
+    "nodes": 22445863,
+    "time": 5.002031326293945,
+    "best_move": "e2h5",
+    "pv": [
+      "e2h5",
+      "g7g6",
+      "d3c4",
+      "g8f6",
+      "h5f3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "5bk1/4p1p1/7n/1p6/8/1P5n/r7/3R3K w - - 6 35",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0827718,
+    "evaluation": -9991,
+    "depth": 55,
+    "nodes": 22285945,
+    "time": 5.000577211380005,
+    "best_move": "d1d3",
+    "pv": [
+      "d1d3",
+      "h3f2",
+      "h1g2",
+      "f2d3",
+      "g2f3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r3k1n1/4pp2/2n5/p7/5P2/P5P1/2q1N1K1/b7 w q - 0 19",
+    "position_type": "material_imbalances",
+    "generated_at": 1759410556.0829837,
+    "evaluation": -9993,
+    "depth": 70,
+    "nodes": 31935303,
+    "time": 5.000970125198364,
+    "best_move": "g2f2",
+    "pv": [
+      "g2f2",
+      "a8d8",
+      "f2f3",
+      "d8d3",
+      "f3f2"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1n1k3B/2Nr4/7p/1Pp5/r1P2PP1/R2B4/3P2P1/2Q1K2R b - - 4 28",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0822346,
+    "evaluation": 12.24,
+    "depth": 21,
+    "nodes": 21914899,
+    "time": 5.002126216888428,
+    "best_move": "a4b4",
+    "pv": [
+      "a4b4",
+      "c7e6",
+      "d8c8",
+      "e6c5",
+      "d7g7"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnbqk1n1/p1pp1p2/8/1pr5/4P1P1/2PP3B/PP1N1P1P/R3K1NR w KQq - 1 11",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0817862,
+    "evaluation": -4.49,
+    "depth": 21,
+    "nodes": 13375388,
+    "time": 5.00225830078125,
+    "best_move": "g1f3",
+    "pv": [
+      "g1f3",
+      "b5b4",
+      "c3b4",
+      "c5g5",
+      "f3g5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "2bq1k2/4p1p1/r2p1p2/ppp5/P1P2B1p/5PrN/1P3PPP/RN2KBR1 w Q - 1 16",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.0824986,
+    "evaluation": 3.7,
+    "depth": 22,
+    "nodes": 9093769,
+    "time": 4.42999792098999,
+    "best_move": "a4b5",
+    "pv": [
+      "a4b5",
+      "g3h3",
+      "b5a6",
+      "d8b6",
+      "a6a7"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "8/7b/6k1/8/2P5/B7/P5K1/8 w - - 3 38",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0827413,
+    "evaluation": 0.0,
+    "depth": 29,
+    "nodes": 12475526,
+    "time": 5.002275228500366,
+    "best_move": "g2f2",
+    "pv": [
+      "g2f2",
+      "h7g8",
+      "c4c5",
+      "g8d5",
+      "f2e3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1b3n1/p2p4/6pp/1Bpk4/1n2p2P/bP4q1/P1PP2P1/R2K3R w - - 1 21",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0822315,
+    "evaluation": -10.17,
+    "depth": 22,
+    "nodes": 19589670,
+    "time": 5.0027289390563965,
+    "best_move": "h1e1",
+    "pv": [
+      "h1e1",
+      "g3e1",
+      "d1e1",
+      "b4c2",
+      "e1f2"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "6n1/5k2/8/5p1p/5P1P/4P3/2P1K3/2B4r b - - 0 29",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0827446,
+    "evaluation": -9982,
+    "depth": 38,
+    "nodes": 24243648,
+    "time": 5.001904249191284,
+    "best_move": "h1c1",
+    "pv": [
+      "h1c1",
+      "e3e4",
+      "f5e4",
+      "e2e3",
+      "g8f6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnb1k3/p2p2rp/4p2b/p1p2p2/P6q/1P3PP1/2PPP2R/1RBQKBN1 w q - 4 18",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.0825186,
+    "evaluation": 6.78,
+    "depth": 24,
+    "nodes": 17715493,
+    "time": 5.001423597335815,
+    "best_move": "h2h4",
+    "pv": [
+      "h2h4",
+      "h6g5",
+      "h4h3",
+      "b8c6",
+      "c1b2"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1nb5/rp1pkpq1/4p3/p1p3P1/P7/1PNPP3/4BP2/R1BQK3 w Q - 1 17",
+    "position_type": "material_imbalances",
+    "generated_at": 1759410556.0829859,
+    "evaluation": 6.09,
+    "depth": 20,
+    "nodes": 8656112,
+    "time": 5.002669334411621,
+    "best_move": "c1b2",
+    "pv": [
+      "c1b2",
+      "e7d8",
+      "e1d2",
+      "a7a6",
+      "d1h1"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnb1k1n1/1p1pp3/p4p1b/q5B1/3N3R/NRPP4/P1P1PK2/3Q1B2 w q - 3 15",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.082025,
+    "evaluation": 7.22,
+    "depth": 20,
+    "nodes": 14725365,
+    "time": 5.010961532592773,
+    "best_move": "g5h6",
+    "pv": [
+      "g5h6",
+      "a5c5",
+      "e2e3",
+      "b8c6",
+      "d1h5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1bqk1nr/ppppb1pp/2n5/4pp2/P2PP3/5N2/1PP2PPP/RNBQKB1R w KQkq - 1 5",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.0823228,
+    "evaluation": 1.68,
+    "depth": 24,
+    "nodes": 6985697,
+    "time": 4.42929220199585,
+    "best_move": "f3e5",
+    "pv": [
+      "f3e5",
+      "f5e4",
+      "b1c3",
+      "g8f6",
+      "f1c4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnb1Nbnr/1p1pkppp/p7/2p1P3/2q5/6PN/PPPPP2P/R1BQKB1R b KQ - 5 8",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0814838,
+    "evaluation": -2.35,
+    "depth": 21,
+    "nodes": 8968802,
+    "time": 5.00209903717041,
+    "best_move": "e7e8",
+    "pv": [
+      "e7e8",
+      "h3f4",
+      "d7d6",
+      "e2e3",
+      "c4b4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnb1k1r1/p2pbppp/8/1pp1p2n/P1P4q/BP2PPP1/R2P3P/1NNQKB1R w Kq - 1 13",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.08262,
+    "evaluation": 5.69,
+    "depth": 22,
+    "nodes": 18335516,
+    "time": 5.00238823890686,
+    "best_move": "g3h4",
+    "pv": [
+      "g3h4",
+      "b5b4",
+      "a3b2",
+      "e7h4",
+      "e1e2"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1bqkbnr/pp1p1pp1/n3p3/1Np4p/4P2P/8/PPPP1PP1/R1BQKBNR w KQkq - 0 5",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.0823252,
+    "evaluation": 0.63,
+    "depth": 22,
+    "nodes": 7224126,
+    "time": 5.004374742507935,
+    "best_move": "d2d4",
+    "pv": [
+      "d2d4",
+      "d7d5",
+      "c1g5",
+      "d8a5",
+      "c2c3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "2b1kbnr/1r1pp3/pp4pp/n1p2P1B/2P5/P1P1P3/2QP1P1P/RNB1K1NR b KQk - 1 16",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.082499,
+    "evaluation": 5.72,
+    "depth": 22,
+    "nodes": 16119531,
+    "time": 5.005952835083008,
+    "best_move": "g6h5",
+    "pv": [
+      "g6h5",
+      "d2d4",
+      "g8f6",
+      "e3e4",
+      "h8g8"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1r3k2/7p/6p1/6P1/8/8/3K4/7b b - - 8 37",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.08278,
+    "evaluation": -9988,
+    "depth": 64,
+    "nodes": 20785515,
+    "time": 5.0019896030426025,
+    "best_move": "b8b5",
+    "pv": [
+      "b8b5",
+      "d2e3",
+      "b5g5",
+      "e3f4",
+      "g5f5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1bqkbnr/1p1ppppp/2n5/p7/3pP3/4BN1P/PPP2PP1/RN1QKB1R b KQkq - 0 5",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.082373,
+    "evaluation": -5.04,
+    "depth": 20,
+    "nodes": 11555243,
+    "time": 4.42473030090332,
+    "best_move": "d4e3",
+    "pv": [
+      "d4e3",
+      "b1c3",
+      "e3f2",
+      "e1f2",
+      "e7e6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnbk1bnr/ppp1qp1p/4p1p1/Q2pP3/2PP4/8/PP3PPP/RNB1KBNR b KQ - 2 7",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.082464,
+    "evaluation": 0.82,
+    "depth": 23,
+    "nodes": 8058177,
+    "time": 5.001147747039795,
+    "best_move": "d5c4",
+    "pv": [
+      "d5c4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r2q4/1ppkpp2/2p3pb/Pn1P1b2/2P4P/4B1P1/P3K1P1/RN4NR b - - 0 18",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0820694,
+    "evaluation": -6.64,
+    "depth": 24,
+    "nodes": 17918762,
+    "time": 5.00157618522644,
+    "best_move": "d8h8",
+    "pv": [
+      "d8h8",
+      "g1f3",
+      "h8b2",
+      "e3d2",
+      "b5d4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1Rb1k2B/3p4/4p1p1/1Bp5/2n5/8/2PP1P2/1N1QK3 b - - 0 16",
+    "position_type": "material_imbalances",
+    "generated_at": 1759410556.082937,
+    "evaluation": 9994,
+    "depth": 96,
+    "nodes": 43899670,
+    "time": 5.000685691833496,
+    "best_move": "e8d8",
+    "pv": [
+      "e8d8",
+      "d1f3",
+      "d8c7",
+      "b8c8",
+      "c7c8"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1bqkbnr/pppppp1p/4n1p1/8/2P1P1P1/P4N2/1P1P1P1P/RNBQKB1R b KQkq - 0 5",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.0824473,
+    "evaluation": 0.0,
+    "depth": 22,
+    "nodes": 8653982,
+    "time": 5.0021679401397705,
+    "best_move": "g8f6",
+    "pv": [
+      "g8f6",
+      "d2d4",
+      "d7d6",
+      "d4d5",
+      "e6c5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1bk1bn1/4ppp1/1p1p4/p7/1npP4/5N2/P3PPP1/R1B1KB1R w Q - 0 14",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0819147,
+    "evaluation": 2.57,
+    "depth": 22,
+    "nodes": 9281010,
+    "time": 5.002774953842163,
+    "best_move": "h1h8",
+    "pv": [
+      "h1h8",
+      "b4c2",
+      "e1d2",
+      "c2a1",
+      "h8g8"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "6k1/1p6/8/n6P/8/P2K2P1/8/R1BB4 w - - 1 39",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0828197,
+    "evaluation": 9989,
+    "depth": 47,
+    "nodes": 21348269,
+    "time": 5.002100467681885,
+    "best_move": "a1b1",
+    "pv": [
+      "a1b1",
+      "g8f7",
+      "h5h6",
+      "a5c6",
+      "b1b7"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1bqkb1r/1pppnppp/p6n/4p3/BP2P3/5N2/P1PP1PPP/RNBQK2R w KQkq - 1 6",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.0823371,
+    "evaluation": 1.29,
+    "depth": 22,
+    "nodes": 7438206,
+    "time": 4.4238786697387695,
+    "best_move": "f3e5",
+    "pv": [
+      "f3e5",
+      "e7g6",
+      "e5g6",
+      "h7g6",
+      "a2a3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "2bqk1nr/rppppp1p/6P1/p7/1nP1P3/2b5/PP1PN1PP/RNB1KBR1 b Qk - 2 9",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.0825367,
+    "evaluation": -6.41,
+    "depth": 21,
+    "nodes": 17985938,
+    "time": 5.001675128936768,
+    "best_move": "b4d3",
+    "pv": [
+      "b4d3",
+      "e1d1",
+      "c3e5",
+      "g6f7",
+      "e8f7"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnbq1bnr/ppp1kppp/8/3pp3/3P1P2/4PQ2/PPP3PP/RNB1KBNR b KQ - 2 4",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.082408,
+    "evaluation": -0.75,
+    "depth": 24,
+    "nodes": 8078639,
+    "time": 5.002061367034912,
+    "best_move": "e5e4",
+    "pv": [
+      "e5e4",
+      "f3f2"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "B1b1kb2/p3p3/3p2r1/5ppB/Q2n4/4P1PP/P2P1P2/2R1K2R b K - 1 23",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0815234,
+    "evaluation": 10.06,
+    "depth": 49,
+    "nodes": 19422439,
+    "time": 5.000986814498901,
+    "best_move": "e8f7",
+    "pv": [
+      "e8f7",
+      "c1c8",
+      "f7g7",
+      "a4d4",
+      "g7h7"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1bk3r/1pp1n2p/8/p2Npp2/1P5K/N1B4n/P1P3P1/R6R b - - 2 19",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0820336,
+    "evaluation": -4.15,
+    "depth": 22,
+    "nodes": 9235057,
+    "time": 5.001481771469116,
+    "best_move": "e7d5",
+    "pv": [
+      "e7d5",
+      "a1d1",
+      "h3f4",
+      "c3e5",
+      "f4g6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnb1k1nr/pp1p2pp/2p1p3/1Rb5/2P3P1/N7/P2PPP1P/2B1KBNR b kq - 1 12",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.082573,
+    "evaluation": -3.96,
+    "depth": 20,
+    "nodes": 9949432,
+    "time": 5.005309820175171,
+    "best_move": "c6b5",
+    "pv": [
+      "c6b5",
+      "a3b5",
+      "b8a6",
+      "g1f3",
+      "g8h6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnb1kb2/1p2pp1r/2p4Q/pR1p3p/3P4/N1P1PP2/P1P3PP/2B1KBNR w Kq - 1 12",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.0827243,
+    "evaluation": 9.89,
+    "depth": 21,
+    "nodes": 16961793,
+    "time": 4.42741847038269,
+    "best_move": "h6h7",
+    "pv": [
+      "h6h7",
+      "c6b5",
+      "a3b5",
+      "b8a6",
+      "e3e4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r4r2/p3bkpp/1p6/3p1P2/N4P2/7P/R2P4/2BK2R1 w - - 1 29",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0816884,
+    "evaluation": 4.15,
+    "depth": 21,
+    "nodes": 7132120,
+    "time": 5.004133701324463,
+    "best_move": "c1b2",
+    "pv": [
+      "c1b2",
+      "e7f6",
+      "b2f6",
+      "f7f6",
+      "a4c3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "5b2/5p2/pk4p1/4N3/8/2N5/P2K4/R1B5 b - - 0 27",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0828319,
+    "evaluation": 7.05,
+    "depth": 22,
+    "nodes": 21153040,
+    "time": 5.00124716758728,
+    "best_move": "b6c7",
+    "pv": [
+      "b6c7",
+      "a1b1",
+      "f8g7",
+      "e5c4",
+      "f7f5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1nbR4/r4k1r/p1p2p2/4P3/1BP1P3/8/P5P1/4KBq1 w - - 6 31",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0821512,
+    "evaluation": -7.49,
+    "depth": 19,
+    "nodes": 22413497,
+    "time": 5.001871824264526,
+    "best_move": "d8f8",
+    "pv": [
+      "d8f8",
+      "f7g6",
+      "e1d2",
+      "g1f1",
+      "f8f6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r3kbn1/p3ppp1/7r/7Q/2P5/3P4/PP3PP1/RN2K1NR w KQq - 0 12",
+    "position_type": "material_imbalances",
+    "generated_at": 1759410556.0829184,
+    "evaluation": 11.25,
+    "depth": 22,
+    "nodes": 23355423,
+    "time": 5.003115177154541,
+    "best_move": "h5b5",
+    "pv": [
+      "h5b5",
+      "e8d8",
+      "b5d5",
+      "d8c7",
+      "h1h6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1b1kr2/p2p1p1p/np1b1n2/2p1PpB1/8/1P2P1PB/P1P2P1P/R2NK1NR b - - 0 15",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.0825412,
+    "evaluation": 0.3,
+    "depth": 25,
+    "nodes": 8055491,
+    "time": 5.001984596252441,
+    "best_move": "d6e5",
+    "pv": [
+      "d6e5",
+      "c2c3",
+      "f6e4",
+      "g5f4",
+      "e5f4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1n3k1r/1bbp2pp/2P5/8/8/5Q2/2KPq3/R1B2n1R b - - 1 29",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0814283,
+    "evaluation": -6.58,
+    "depth": 20,
+    "nodes": 19790137,
+    "time": 4.4360363483428955,
+    "best_move": "e2f3",
+    "pv": [
+      "e2f3",
+      "h1f1",
+      "f3f1",
+      "c1a3",
+      "f8e8"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1bqkbnr/pp1ppp1p/n7/2p3p1/4P1PP/3B4/PPPP1P2/RNBQK1NR b KQkq - 0 4",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.0823557,
+    "evaluation": 0.57,
+    "depth": 22,
+    "nodes": 6932025,
+    "time": 5.000962495803833,
+    "best_move": "a6b4",
+    "pv": [
+      "a6b4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "3k1b1B/2pp4/3p4/8/P2P4/8/2P2K2/8 b - - 0 26",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0827458,
+    "evaluation": 0.0,
+    "depth": 47,
+    "nodes": 10595069,
+    "time": 5.002661228179932,
+    "best_move": "d6d5",
+    "pv": [
+      "d6d5",
+      "f2e3",
+      "c7c6",
+      "e3f4",
+      "f8b4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1n1k1br1/r3p1p1/p4n2/8/1BN4p/P1P1P2R/RP3P2/5K2 w - - 1 25",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0813417,
+    "evaluation": -2.15,
+    "depth": 22,
+    "nodes": 7114919,
+    "time": 5.002247333526611,
+    "best_move": "b4c5",
+    "pv": [
+      "b4c5",
+      "a7d7",
+      "h3h4",
+      "g7g5",
+      "h4d4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1b1kbnr/p1qpp1pp/n7/1Pp2p2/5N1P/8/1PPPPPP1/R1BQKBNR w KQkq - 2 7",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.081948,
+    "evaluation": 2.95,
+    "depth": 18,
+    "nodes": 8195762,
+    "time": 5.002387523651123,
+    "best_move": "d2d4",
+    "pv": [
+      "d2d4",
+      "a6b4",
+      "c2c3",
+      "c5d4",
+      "c3b4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnbq2r1/1pkp1pp1/p1p2n1p/8/Pb1Q4/3P4/1PP1P1PP/RNB1KBR1 w Q - 2 13",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0821662,
+    "evaluation": 0.79,
+    "depth": 23,
+    "nodes": 7280199,
+    "time": 5.001961946487427,
+    "best_move": "d4b4",
+    "pv": [
+      "d4b4",
+      "d7d6",
+      "a4a5",
+      "c6c5",
+      "b4b6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r3k1n1/p1p2p1r/p7/3Pp1p1/8/P1P5/P2PbP2/RNBQK3 w Qq - 0 11",
+    "position_type": "material_imbalances",
+    "generated_at": 1759410556.0829911,
+    "evaluation": 6.2,
+    "depth": 23,
+    "nodes": 18229394,
+    "time": 5.0035669803619385,
+    "best_move": "e1e2",
+    "pv": [
+      "e1e2",
+      "f7f5",
+      "d1a4",
+      "e8f7",
+      "d2d3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1rbq4/1p1ppk2/8/p7/2P5/1P5P/3PP2P/R1B1KB2 b Q - 0 15",
+    "position_type": "material_imbalances",
+    "generated_at": 1759410556.0843108,
+    "evaluation": -6.73,
+    "depth": 21,
+    "nodes": 19429744,
+    "time": 4.42509388923645,
+    "best_move": "d8h8",
+    "pv": [
+      "d8h8",
+      "a1a4",
+      "h8h4",
+      "e1d1",
+      "h4f2"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1n3bn1/1p4pr/3pbk2/2p2p2/5p2/P1P5/R2PP3/1NBK1BN1 b - - 3 15",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.082724,
+    "evaluation": -7.41,
+    "depth": 25,
+    "nodes": 20570097,
+    "time": 5.001977443695068,
+    "best_move": "e6a2",
+    "pv": [
+      "e6a2",
+      "g1h3",
+      "a2b1",
+      "h3f4",
+      "b1e4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnbqkb1r/pppp1p1p/4p2n/6p1/4P1P1/7P/PPPP1P2/RNBQKBNR w KQkq - 0 4",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.0824556,
+    "evaluation": 1.83,
+    "depth": 21,
+    "nodes": 8057731,
+    "time": 5.003335475921631,
+    "best_move": "b1c3",
+    "pv": [
+      "b1c3",
+      "c7c5",
+      "d2d4",
+      "c5d4",
+      "d1d4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "2b3k1/8/1p1N4/5p2/1P6/1P4P1/2P2K2/5BN1 b - - 0 24",
+    "position_type": "material_imbalances",
+    "generated_at": 1759410556.082985,
+    "evaluation": 7.91,
+    "depth": 35,
+    "nodes": 29129224,
+    "time": 5.001251459121704,
+    "best_move": "c8d7",
+    "pv": [
+      "c8d7",
+      "g1f3",
+      "g8g7",
+      "d6c4",
+      "g7f7"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r2B2kr/p2p4/8/p2PPp1p/7K/2R3Pp/2P1N1B1/8 w - - 3 30",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0819323,
+    "evaluation": 5.63,
+    "depth": 21,
+    "nodes": 10609410,
+    "time": 5.01376748085022,
+    "best_move": "g2h3",
+    "pv": [
+      "g2h3",
+      "a8d8",
+      "h3f5",
+      "a5a4",
+      "e2f4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnbq2nr/ppppkpbp/B7/4p1p1/4P2P/N7/PPPP1PP1/R1BQK1NR w KQ - 4 5",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.0823305,
+    "evaluation": 2.07,
+    "depth": 22,
+    "nodes": 7509140,
+    "time": 5.0054919719696045,
+    "best_move": "a6c4",
+    "pv": [
+      "a6c4",
+      "g5g4",
+      "d1g4",
+      "e7f8",
+      "g4g3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1nb1q2r/r1p2ppp/p3p3/1pk5/P4PnP/3R4/2P1P1B1/1NB1K1NR w - - 6 15",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0812933,
+    "evaluation": -3.46,
+    "depth": 19,
+    "nodes": 13524754,
+    "time": 4.470301389694214,
+    "best_move": "c1b2",
+    "pv": [
+      "c1b2",
+      "b8c6",
+      "a4a5",
+      "b5b4",
+      "b1d2"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "5b1r/rpkb1pp1/1R5p/6n1/N7/1B3nKP/P2Bq1P1/6NR b - - 6 26",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0822206,
+    "evaluation": -9998,
+    "depth": 245,
+    "nodes": 79526,
+    "time": 0.020107030868530273,
+    "best_move": "g5e4",
+    "pv": [
+      "g5e4",
+      "g3f4",
+      "g7g5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "5bnr/p3p1kp/np4p1/5p2/2bKP3/B4PP1/7P/RN4NR w - - 0 21",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0814323,
+    "evaluation": 4.52,
+    "depth": 21,
+    "nodes": 10318216,
+    "time": 5.005707502365112,
+    "best_move": "d4c4",
+    "pv": [
+      "d4c4",
+      "g8f6",
+      "g1h3",
+      "f5e4",
+      "h3g5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "8/6pp/4k2n/5p1P/1b1R1K2/6P1/8/8 w - - 1 35",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.082886,
+    "evaluation": 5.1,
+    "depth": 22,
+    "nodes": 14534095,
+    "time": 5.005016565322876,
+    "best_move": "d4b4",
+    "pv": [
+      "d4b4",
+      "h6f7",
+      "b4b6",
+      "f7d6",
+      "b6a6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "4rbnr/p1pq1pp1/1p2pk2/3p3p/P7/2P1P1R1/RPNPNPP1/2B1KB2 b - - 1 14",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0822911,
+    "evaluation": -4.24,
+    "depth": 19,
+    "nodes": 12330581,
+    "time": 5.002687454223633,
+    "best_move": "g7g6",
+    "pv": [
+      "g7g6",
+      "g3f3",
+      "f6g7",
+      "c3c4",
+      "g8f6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "NB1k2r1/1p6/p7/q5pp/PPpn3P/5N1b/5PP1/1R2KB1R w - - 0 25",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0821657,
+    "evaluation": 8.37,
+    "depth": 25,
+    "nodes": 23513326,
+    "time": 5.001760482788086,
+    "best_move": "b4a5",
+    "pv": [
+      "b4a5",
+      "d4f3",
+      "g2f3",
+      "h3f1",
+      "e1f1"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1r2kN2/p1p5/B1nq1p2/4p3/1P4P1/2P1P1n1/P2N1P2/R1BK3R w - - 1 22",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0822167,
+    "evaluation": 3.55,
+    "depth": 21,
+    "nodes": 9825464,
+    "time": 5.001961708068848,
+    "best_move": "f2g3",
+    "pv": [
+      "f2g3",
+      "e8f8",
+      "a6e2",
+      "f8g7",
+      "e3e4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rn1qkbnr/pp3ppp/3p4/2p1p3/2PPP3/4BN1b/PP3PPP/RN1QKB1R b KQkq - 2 5",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.0823607,
+    "evaluation": 0.08,
+    "depth": 26,
+    "nodes": 8264392,
+    "time": 5.001400470733643,
+    "best_move": "e5d4",
+    "pv": [
+      "e5d4",
+      "e3d4",
+      "c5d4",
+      "g2h3",
+      "d8a5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1n6/1kppB3/5p1Q/p2b3p/2P2K2/5PP1/1P6/1N3BN1 b - - 2 30",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0817523,
+    "evaluation": 10.2,
+    "depth": 22,
+    "nodes": 23423437,
+    "time": 4.464216947555542,
+    "best_move": "d5c6",
+    "pv": [
+      "d5c6",
+      "h6h5",
+      "a5a4",
+      "b1c3",
+      "d7d6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "rnbqkbnr/1p1ppppp/8/p1p5/2P5/P4P2/1P1PPKPP/RNBQ1BNR b kq - 1 4",
+    "position_type": "opening_book",
+    "generated_at": 1759410556.082477,
+    "evaluation": -0.57,
+    "depth": 23,
+    "nodes": 8372755,
+    "time": 5.001612901687622,
+    "best_move": "b8c6",
+    "pv": [
+      "b8c6",
+      "e2e3",
+      "g8f6",
+      "b1c3",
+      "e7e6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1bk1bn1/1p1pp3/p2r4/2B4p/P3Q1p1/1P4P1/2PPKP1P/RN3BNR b - - 0 18",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.0825078,
+    "evaluation": 7.82,
+    "depth": 24,
+    "nodes": 21313734,
+    "time": 5.0028910636901855,
+    "best_move": "d6e6",
+    "pv": [
+      "d6e6",
+      "e4e6",
+      "d7e6",
+      "c5d4",
+      "e6e5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "r1b1k2r/ppp2p1p/4pnp1/3q4/Pn5K/6PP/2P1P3/RN3BNR b kq - 4 14",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0818427,
+    "evaluation": -9999,
+    "depth": 245,
+    "nodes": 50017,
+    "time": 0.019657611846923828,
+    "best_move": "g6g5",
+    "pv": [
+      "g6g5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "2k5/4p3/p2p4/P7/4K3/6P1/3NP3/5B2 b - - 8 36",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.082863,
+    "evaluation": 9981,
+    "depth": 48,
+    "nodes": 22254522,
+    "time": 5.004593133926392,
+    "best_move": "c8c7",
+    "pv": [
+      "c8c7",
+      "e4d4",
+      "c7b7",
+      "e2e4",
+      "b7a7"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "4k3/5p2/4b1p1/4p1n1/6P1/r7/6K1/8 w - - 8 41",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0828793,
+    "evaluation": -9995,
+    "depth": 245,
+    "nodes": 32809922,
+    "time": 2.6103692054748535,
+    "best_move": "g2f2",
+    "pv": [
+      "g2f2",
+      "e6g4",
+      "f2g2",
+      "g4f3",
+      "g2g3"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1rbk1b1r/p1Np1p1p/4p3/6p1/1n1Q2Pn/1P2BP2/P3P3/R3KBNR b - - 3 17",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0814948,
+    "evaluation": 3.32,
+    "depth": 20,
+    "nodes": 8116392,
+    "time": 5.0016913414001465,
+    "best_move": "b4c2",
+    "pv": [
+      "b4c2",
+      "e1f2",
+      "c2d4",
+      "e3d4",
+      "h8g8"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "8/3k1pp1/1pn5/8/1P6/7P/4P1K1/5BNR w - - 0 31",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0818896,
+    "evaluation": 6.95,
+    "depth": 24,
+    "nodes": 23464776,
+    "time": 5.002821683883667,
+    "best_move": "b4b5",
+    "pv": [
+      "b4b5",
+      "c6b4",
+      "g1f3",
+      "b4a2",
+      "e2e4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "b7/8/7k/N1p1p3/8/8/2P3p1/4B1K1 w - - 0 39",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0827787,
+    "evaluation": 2.54,
+    "depth": 38,
+    "nodes": 15625562,
+    "time": 4.494767665863037,
+    "best_move": "a5c4",
+    "pv": [
+      "a5c4",
+      "h6g5",
+      "e1d2",
+      "g5g4",
+      "c4e5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "4k2r/8/5p2/p7/4B3/3P4/P7/2R3K1 b - - 2 25",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0828311,
+    "evaluation": 5.15,
+    "depth": 24,
+    "nodes": 13370678,
+    "time": 5.001793384552002,
+    "best_move": "h8h4",
+    "pv": [
+      "h8h4",
+      "c1c4",
+      "e8e7",
+      "a2a4",
+      "h4h5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1nb4r/2p2p2/p1B2k2/5pqp/6p1/2P5/Pr1P2KP/RNB3NR w - - 0 21",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0821316,
+    "evaluation": -6.98,
+    "depth": 18,
+    "nodes": 14708758,
+    "time": 5.001537322998047,
+    "best_move": "c1b2",
+    "pv": [
+      "c1b2",
+      "b8c6",
+      "c3c4",
+      "c6e5",
+      "b2e5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "Bnb1kbnr/p2pp1pp/2q5/1p6/2P2Pp1/B7/P2PP2P/RNQK2NR w k - 5 11",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.082598,
+    "evaluation": 7.23,
+    "depth": 21,
+    "nodes": 18880851,
+    "time": 5.010272979736328,
+    "best_move": "a8c6",
+    "pv": [
+      "a8c6",
+      "d7c6",
+      "c4b5",
+      "g8f6",
+      "c1c5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "bn1qkbn1/r1ppppp1/1p6/pP3Q2/P4P2/3PP3/2PB3r/RN2KBNR w KQ - 0 13",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.0826602,
+    "evaluation": 5.18,
+    "depth": 19,
+    "nodes": 10877120,
+    "time": 5.006569862365723,
+    "best_move": "h1h2",
+    "pv": [
+      "h1h2",
+      "e7e6",
+      "f5g5",
+      "d8g5",
+      "f4g5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1rbqkr2/p2p1ppp/n1p4B/1Q2P3/2P1P2P/5PR1/PP2K1P1/RN3Bb1 b - - 0 12",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0819402,
+    "evaluation": -6.86,
+    "depth": 22,
+    "nodes": 17128602,
+    "time": 5.00344705581665,
+    "best_move": "g7h6",
+    "pv": [
+      "g7h6",
+      "b5b8",
+      "a6b8",
+      "g3g7",
+      "d7d6"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "8/6K1/8/4k3/P5p1/6P1/8/5N2 b - - 0 34",
+    "position_type": "endgame_patterns",
+    "generated_at": 1759410556.0828094,
+    "evaluation": 83.08,
+    "depth": 25,
+    "nodes": 38056259,
+    "time": 4.44221043586731,
+    "best_move": "e5d5",
+    "pv": [
+      "e5d5",
+      "a4a5",
+      "d5c6",
+      "f1e3",
+      "c6b7"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "2b1kbnr/R1qp2p1/n1p1p3/8/6p1/7B/1PPPPK1P/1NBQ2NR w k - 0 12",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0820754,
+    "evaluation": 5.27,
+    "depth": 20,
+    "nodes": 18784275,
+    "time": 5.0043723583221436,
+    "best_move": "a7c7",
+    "pv": [
+      "a7c7",
+      "a6c7",
+      "h3g4",
+      "g8f6",
+      "e2e4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1nbq1bnr/2pkp1RN/3p4/p4p2/Pp5P/4PQ2/1PrP1PP1/1NB1KB1R w - - 2 14",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.0825152,
+    "evaluation": 8.39,
+    "depth": 16,
+    "nodes": 17163495,
+    "time": 5.001826524734497,
+    "best_move": "f3f5",
+    "pv": [
+      "f3f5",
+      "d7e8",
+      "f5f8",
+      "e8d7",
+      "f8f5"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1rbqkbr1/p2ppp2/np5n/6pp/1Pp5/2NPP3/PBP2PPP/RN2QRK1 b - - 0 13",
+    "position_type": "tactical_positions",
+    "generated_at": 1759410556.082556,
+    "evaluation": -4.43,
+    "depth": 21,
+    "nodes": 10767265,
+    "time": 5.001392126083374,
+    "best_move": "f8g7",
+    "pv": [
+      "f8g7",
+      "b1a3",
+      "a6b4",
+      "f2f4",
+      "g5f4"
+    ],
+    "status": "success",
+    "error": null
+  },
+  {
+    "fen": "1n6/rp4p1/5Bk1/p1p4r/P1P5/1PNP2qP/4K2R/5B2 w - - 5 26",
+    "position_type": "random_moves",
+    "generated_at": 1759410556.0822573,
+    "evaluation": -5.82,
+    "depth": 23,
+    "nodes": 15852399,
+    "time": 5.002556324005127,
+    "best_move": "h2g2",
+    "pv": [
+      "h2g2",
+      "g3g2",
+      "f1g2",
+      "g6f6",
+      "e2d2"
+    ],
+    "status": "success",
+    "error": null
   }
 ]
