@@ -1,7 +1,0 @@
-{
-  "formula": "complexity                                                       9\nloss                                                      1.703803\nequation         (x425 + ((x211 - x426) - -0.21903144)) * 3.967...\nscore                                                     0.123403\nsympy_format      (x211 + x425 - x426 - 1*(-0.21903144))*3.9678888\nlambda_format    PySRFunction(X=>(x211 + x425 - x426 - 1*(-0.21...\nName: 6, dtype: object",
-  "r2_score": 0.60647159512377,
-  "features_used": [],
-  "total_features": 782,
-  "test_success": true
-}

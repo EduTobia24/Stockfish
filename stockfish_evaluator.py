@@ -5,6 +5,7 @@ Stockfish Position Evaluator
 
 Evaluates chess positions using Stockfish engine.
 Takes position files and outputs evaluations with detailed analysis.
+Includes incremental saving to prevent data loss.
 """
 
 import chess
@@ -16,20 +17,7 @@ import sys
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 
-class Sto        print(f"\n💾 Saved {len(results)} evaluations to {output_file_with_ext}")
-        
-        # Show sample results
-        successful_results = [r for r in results if r['status'] == 'success']
-        if successful_results:
-            print(f"\n🔍 Sample evaluations:")
-            for i, result in enumerate(successful_results[:5]):
-                print(f"   {i+1}. Eval: {result['evaluation']:+.2f}, "
-                      f"Depth: {result['depth']}, "
-                      f"Best: {result['best_move']}")
-        
-        print(f"\n🎉 Evaluation complete!")
-        print(f"📋 Next step: Extract bitboard features with:")
-        print(f"   python3 bitboard_extractor.py --dataset {output_file_with_ext} --output extracted_features")r:
+class StockfishEvaluator:
     """Evaluates chess positions using Stockfish engine."""
     
     def __init__(self, stockfish_path: str = None, threads: int = 4, 
@@ -160,6 +148,23 @@ class Sto        print(f"\n💾 Saved {len(results)} evaluations to {output_file
             
             evaluation_time = time.time() - start_time
             
+            # Handle analysis result (it's a list with multipv)
+            if isinstance(analysis, list):
+                if len(analysis) == 0:
+                    return {
+                        'fen': fen,
+                        'evaluation': None,
+                        'depth': 0,
+                        'nodes': 0,
+                        'time': evaluation_time,
+                        'best_move': None,
+                        'pv': [],
+                        'status': 'engine_error',
+                        'error': 'Empty analysis result'
+                    }
+                # Take the first (and usually only) analysis result
+                analysis = analysis[0]
+            
             # Extract evaluation
             score = analysis.get('score')
             if score is None:
@@ -225,8 +230,28 @@ class Sto        print(f"\n💾 Saved {len(results)} evaluations to {output_file
                 'error': str(e)
             }
     
-    def evaluate_positions_from_file(self, input_file: str, output_file: str = None, save_interval: int = 50) -> List[Dict]:
-        """Evaluate positions from input file."""
+    def save_results(self, results: List[Dict], output_file: str):
+        """Save results to file (JSON or CSV based on extension)."""
+        
+        try:
+            if output_file.endswith('.json'):
+                with open(output_file, 'w') as f:
+                    json.dump(results, f, indent=2)
+            elif output_file.endswith('.csv'):
+                import csv
+                if results:
+                    with open(output_file, 'w', newline='') as f:
+                        writer = csv.DictWriter(f, fieldnames=results[0].keys())
+                        writer.writeheader()
+                        writer.writerows(results)
+            return True
+        except Exception as e:
+            print(f"   ⚠️ Save failed: {e}")
+            return False
+    
+    def evaluate_positions_from_file(self, input_file: str, output_file: str = None, 
+                                   save_interval: int = 50) -> List[Dict]:
+        """Evaluate positions from input file with incremental saving."""
         
         print(f"📂 Loading positions from {input_file}")
         
@@ -238,7 +263,7 @@ class Sto        print(f"\n💾 Saved {len(results)} evaluations to {output_file
             if isinstance(data, list):
                 # List of position objects or FEN strings
                 if isinstance(data[0], dict):
-                    positions = [(pos.get('fen', pos), pos) for pos in data]
+                    positions = [(pos['fen'], pos) for pos in data]
                 else:
                     positions = [(fen, {'fen': fen}) for fen in data]
             else:
@@ -250,6 +275,8 @@ class Sto        print(f"\n💾 Saved {len(results)} evaluations to {output_file
             positions = [(fen, {'fen': fen}) for fen in fens]
         
         print(f"✅ Loaded {len(positions)} positions")
+        if output_file:
+            print(f"💾 Will save progress every {save_interval} positions to {output_file}")
         
         # Start engine
         self.start_engine()
@@ -262,12 +289,16 @@ class Sto        print(f"\n💾 Saved {len(results)} evaluations to {output_file
             for i, (fen, original_data) in enumerate(positions):
                 self.stats['total_positions'] += 1
                 
-                # Show current position being evaluated
+                # Clear previous line and show current position being evaluated
+                print(f"\r{' ' * 120}\r", end='')  # Clear the line first
                 position_type = original_data.get('position_type', 'unknown')
-                print(f"\r🔍 Evaluating position {i+1}/{len(positions)}: {position_type} - {fen[:50]}{'...' if len(fen) > 50 else ''}", end='', flush=True)
+                print(f"🔍 Evaluating position {i+1}/{len(positions)}: {position_type} - {fen[:50]}{'...' if len(fen) > 50 else ''}", end='', flush=True)
                 
                 # Evaluate position
                 evaluation_result = self.evaluate_position(fen)
+                
+                # Clear evaluation line before showing progress
+                print(f"\r{' ' * 120}\r", end='')
                 
                 # Combine with original data
                 result = {**original_data, **evaluation_result}
@@ -279,12 +310,11 @@ class Sto        print(f"\n💾 Saved {len(results)} evaluations to {output_file
                 else:
                     self.stats['failed_evaluations'] += 1
                     failure_reason = evaluation_result['status']
-                    self.stats['failure_reasons'][failure_reason] = \
-                        self.stats['failure_reasons'].get(failure_reason, 0) + 1
+                    self.stats['failure_reasons'][failure_reason] = (
+                        self.stats['failure_reasons'].get(failure_reason, 0) + 1)
                 
-                # Progress update
+                # Progress update every 10 positions
                 if (i + 1) % 10 == 0 or (i + 1) == len(positions):
-                    print("\r" + " " * 120 + "\r", end='')  # Clear the line
                     
                     elapsed = time.time() - start_time
                     rate = (i + 1) / elapsed
@@ -310,27 +340,12 @@ class Sto        print(f"\n💾 Saved {len(results)} evaluations to {output_file
                 
                 # Incremental save every save_interval positions
                 if output_file and (i + 1) % save_interval == 0:
-                    try:
-                        # Determine file format from extension
-                        if output_file.endswith('.json'):
-                            with open(output_file, 'w') as f:
-                                json.dump(results, f, indent=2)
-                        elif output_file.endswith('.csv'):
-                            import csv
-                            if results:
-                                with open(output_file, 'w', newline='') as f:
-                                    writer = csv.DictWriter(f, fieldnames=results[0].keys())
-                                    writer.writeheader()
-                                    writer.writerows(results)
-                        
+                    if self.save_results(results, output_file):
                         print(f"   💾 Saved {len(results)} results to {output_file}")
-                        
-                    except Exception as save_error:
-                        print(f"   ⚠️ Save failed: {save_error}")
         
         finally:
             # Clear any remaining position display
-            print("\r" + " " * 120 + "\r", end='', flush=True)
+            print(f"\r{' ' * 120}\r", end='', flush=True)
             
             # Stop engine
             self.stop_engine()
@@ -391,6 +406,7 @@ def main():
     print(f"⏱️  Analysis time: {args.time}s per position")
     print(f"🧵 Threads: {args.threads}")
     print(f"💾 Hash: {args.hash}MB")
+    print(f"💾 Save every: {args.save_interval} positions")
     print("=" * 50)
     
     # Check input file exists
@@ -413,22 +429,16 @@ def main():
     # Evaluate positions
     try:
         output_file_with_ext = f"{args.output}.{args.format}"
-        results = evaluator.evaluate_positions_from_file(args.input, output_file_with_ext)
+        results = evaluator.evaluate_positions_from_file(
+            args.input, 
+            output_file_with_ext,
+            args.save_interval
+        )
         
-        # Final save (in case incremental saves were disabled or failed)
-        if args.format == 'json':
-            with open(output_file_with_ext, 'w') as f:
-                json.dump(results, f, indent=2)
-        else:  # CSV format
-            import csv
-            
-            if results:
-                with open(output_file_with_ext, 'w', newline='') as f:
-                    writer = csv.DictWriter(f, fieldnames=results[0].keys())
-                    writer.writeheader()
-                    writer.writerows(results)
+        # Final save (ensures all results are saved)
+        evaluator.save_results(results, output_file_with_ext)
         
-        print(f"\\n💾 Saved {len(results)} evaluations to {output_file}")
+        print(f"\\n💾 Final save: {len(results)} evaluations to {output_file_with_ext}")
         
         # Show sample results
         successful_results = [r for r in results if r['status'] == 'success']
@@ -441,7 +451,7 @@ def main():
         
         print(f"\\n🎉 Evaluation complete!")
         print(f"📋 Next step: Extract bitboard features with:")
-        print(f"   python3 bitboard_extractor.py --dataset {output_file} --output extracted_features")
+        print(f"   python3 bitboard_extractor.py --dataset {output_file_with_ext} --output extracted_features")
         
         return 0
         
