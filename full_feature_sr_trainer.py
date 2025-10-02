@@ -148,9 +148,15 @@ def train_full_feature_sr_model(features, evaluations, feature_names):
         # Analyze which features were actually used
         equation_str = str(best_equation)
         used_features = []
-        for i, name in enumerate(feature_names):
-            if name in equation_str:
-                used_features.append((name, i))
+        
+        # Extract x_numbers from equation (e.g., x212, x24, x610, etc.)
+        import re
+        feature_indices = re.findall(r'x(\d+)', equation_str)
+        feature_indices = [int(idx) for idx in set(feature_indices)]
+        
+        for idx in feature_indices:
+            if idx < len(feature_names):
+                used_features.append((feature_names[idx], idx))
         
         print(f"\n🔍 Features Used in Final Formula:")
         print(f"   Total features used: {len(used_features)}/{len(feature_names)}")
@@ -177,12 +183,12 @@ def train_full_feature_sr_model(features, evaluations, feature_names):
             'training_r2': float(training_score),
             'rmse': float(rmse),
             'mae': float(mae),
-            'total_features': len(feature_names),
-            'features_used': len(used_features),
+            'total_features': int(len(feature_names)),
+            'features_used': int(len(used_features)),
             'used_feature_names': [name for name, _ in used_features],
-            'n_positions': len(features),
-            'feature_usage_efficiency': len(used_features) / len(feature_names),
-            'model_complexity': getattr(best_equation, 'complexity', getattr(best_equation, 'size', None))
+            'n_positions': int(len(features)),
+            'feature_usage_efficiency': float(len(used_features) / len(feature_names)),
+            'model_complexity': int(getattr(best_equation, 'complexity', getattr(best_equation, 'size', 0)))
         }
         
         with open('full_feature_sr_results.json', 'w') as f:
