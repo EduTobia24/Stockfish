@@ -197,7 +197,7 @@ def get_all_feature_names():
     
     return feature_names
 
-def train_high_complexity_sr_model(features, evaluations, feature_names, max_complexity=100, previous_equations_path=None, output_dir="outputs", loss_function="mse"):
+def train_high_complexity_sr_model(features, evaluations, feature_names, max_complexity=100, previous_equations_path=None, output_dir="outputs", loss_function="max_error"):
     """Train symbolic regression with high complexity for large datasets and custom loss functions.
     
     Args:
@@ -234,7 +234,7 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
     # Configuración base de PySR
     pysr_config = {
         # Evolution parameters (scaled for larger datasets)
-        'niterations': 1000,              # More iterations for complex search
+        'niterations': 5000,              # More iterations for complex search
         'populations': 30,               # More populations for exploration
         'population_size': 50,           # Larger population for diversity
         
@@ -276,16 +276,24 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
     
     # Add custom loss function based on user choice
     if loss_function == "max_error":
-        pysr_config['loss_function'] = custom_loss_function
-        print(f"🎯 Using MAXIMUM ERROR loss function (minimizes worst predictions)")
+        # Use L∞ norm (maximum absolute error) - supported by PySR
+        pysr_config['loss_function'] = "LPDistLoss{Inf}()"
+        print(f"🎯 Using L∞ NORM loss function (minimizes maximum error)")
     elif loss_function == "percentile":
-        pysr_config['loss_function'] = lambda y_true, y_pred: percentile_loss_function(y_true, y_pred, 95)
-        print(f"🎯 Using 95th PERCENTILE loss function (minimizes worst 5% of predictions)")
+        # Use quantile loss to focus on worst errors
+        pysr_config['loss_function'] = "QuantileLoss(τ=0.95)"
+        print(f"🎯 Using QUANTILE loss function (minimizes 95th percentile error)")
     elif loss_function == "huber":
-        pysr_config['loss_function'] = lambda y_true, y_pred: huber_loss_function(y_true, y_pred, 1.0)
+        # Use Huber loss for robustness to outliers
+        pysr_config['loss_function'] = "HuberLoss(δ=1.0)"
         print(f"🎯 Using HUBER loss function (robust to outliers)")
+    elif loss_function == "mae":
+        # Use L1 norm (mean absolute error)
+        pysr_config['loss_function'] = "LPDistLoss{1}()"
+        print(f"🎯 Using L1 NORM loss function (mean absolute error)")
     else:
-        print(f"🎯 Using default MSE loss function")
+        # Default MSE (L2 norm)
+        print(f"🎯 Using default L2 NORM loss function (mean squared error)")
     
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
@@ -529,8 +537,8 @@ def main():
     parser.add_argument('--previous', type=str, default=None,
                        help='Path to previous hall_of_fame.csv for incremental training')
     parser.add_argument('--loss', type=str, default='mse', 
-                       choices=['mse', 'max_error', 'percentile', 'huber'],
-                       help='Loss function: mse (default), max_error (minimize worst predictions), percentile (minimize worst 5%), huber (robust)')
+                       choices=['mse', 'max_error', 'percentile', 'huber', 'mae'],
+                       help='Loss function: mse (L2/default), max_error (L∞ norm), percentile (quantile), huber (robust), mae (L1 norm)')
     
     args = parser.parse_args()
     
