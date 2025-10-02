@@ -12,6 +12,60 @@ import json
 import re
 import os
 from pathlib import Path
+import pandas as pd
+import shutil
+from datetime import datetime
+
+def custom_loss_function(y_true, y_pred):
+    """
+    Custom loss function that minimizes the maximum error (worst case).
+    This focuses on reducing the biggest prediction errors rather than average error.
+    """
+    import numpy as np
+    
+    # Calculate absolute errors for each prediction
+    errors = np.abs(y_true - y_pred)
+    
+    # Return the maximum error (worst case)
+    # This forces the model to minimize the biggest mistakes
+    max_error = np.max(errors)
+    
+    # Add a small penalty for average error to maintain overall accuracy
+    mean_error = np.mean(errors)
+    
+    # Weighted combination: 80% max error + 20% mean error
+    return 0.8 * max_error + 0.2 * mean_error
+
+def percentile_loss_function(y_true, y_pred, percentile=95):
+    """
+    Loss function that minimizes the 95th percentile error.
+    This focuses on reducing the worst 5% of predictions.
+    """
+    import numpy as np
+    
+    errors = np.abs(y_true - y_pred)
+    percentile_error = np.percentile(errors, percentile)
+    mean_error = np.mean(errors)
+    
+    # Weighted combination: 70% percentile error + 30% mean error
+    return 0.7 * percentile_error + 0.3 * mean_error
+
+def huber_loss_function(y_true, y_pred, delta=1.0):
+    """
+    Huber loss function - less sensitive to outliers than MSE.
+    Combines L1 and L2 loss for robust regression.
+    """
+    import numpy as np
+    
+    errors = y_true - y_pred
+    abs_errors = np.abs(errors)
+    
+    # Use L2 loss for small errors, L1 loss for large errors
+    quadratic = np.minimum(abs_errors, delta)
+    linear = abs_errors - quadratic
+    
+    loss = 0.5 * quadratic**2 + delta * linear
+    return np.mean(loss)
 
 def clear_terminal():
     """Clear the terminal screen for cleaner output."""
@@ -84,6 +138,43 @@ def load_and_analyze_data(npz_path: str):
     
     return features, evaluations
 
+def load_previous_hall_of_fame(previous_path):
+    """Cargar ecuaciones del hall_of_fame anterior para entrenamiento incremental."""
+    if not os.path.exists(previous_path):
+        print(f"❌ Archivo hall_of_fame anterior no encontrado: {previous_path}")
+        return None
+    
+    try:
+        df = pd.read_csv(previous_path)
+        print(f"✅ Cargadas {len(df)} ecuaciones del entrenamiento anterior")
+        print(f"   Mejor pérdida anterior: {df['Loss'].min():.6f}")
+        print(f"   Mejor complejidad anterior: {df.loc[df['Loss'].idxmin(), 'Complexity']}")
+        
+        # Mostrar progreso del entrenamiento anterior
+        if len(df) > 1:
+            print(f"   Rango de complejidad: {df['Complexity'].min()}-{df['Complexity'].max()}")
+            print(f"   Rango de pérdida: {df['Loss'].min():.6f}-{df['Loss'].max():.6f}")
+        
+        return df
+    except Exception as e:
+        print(f"❌ Error cargando hall_of_fame anterior: {e}")
+        return None
+
+def setup_incremental_training(previous_hall_of_fame, output_dir):
+    """Configurar entrenamiento incremental copiando ecuaciones anteriores."""
+    # Crear directorio de salida
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Copiar hall_of_fame anterior como punto de partida
+    previous_equations_path = os.path.join(output_dir, "previous_equations.csv")
+    shutil.copy2(previous_hall_of_fame, previous_equations_path)
+    
+    print(f"📂 Configuración de entrenamiento incremental:")
+    print(f"   Ecuaciones anteriores copiadas a: {previous_equations_path}")
+    print(f"   Directorio de salida: {output_dir}")
+    
+    return previous_equations_path
+
 def get_all_feature_names():
     """Generate names for all 782 bitboard features."""
     feature_names = []
@@ -106,7 +197,18 @@ def get_all_feature_names():
     
     return feature_names
 
-def train_high_complexity_sr_model(features, evaluations, feature_names, max_complexity=100):
+def train_high_complexity_sr_model(features, evaluations, feature_names, max_complexity=100, previous_equations_path=None, output_dir="outputs", loss_function="mse"):
+    """Train symbolic regression with high complexity for large datasets and custom loss functions.
+    
+    Args:
+        features: Feature matrix
+        evaluations: Target evaluations  
+        feature_names: Names of features
+        max_complexity: Maximum equation complexity
+        previous_equations_path: Path to previous equations for warm start
+        output_dir: Output directory
+        loss_function: Loss function type - "mse", "max_error", "percentile", or "huber"
+    """
     """Train symbolic regression with high complexity for large datasets."""
     try:
         from pysr import PySRRegressor
@@ -125,46 +227,107 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
     # Clear before showing configuration
     clear_terminal()
     
-    # Configure PySR for high complexity and large datasets
-    model = PySRRegressor(
+    # Configurar archivo de ecuaciones para entrenamiento incremental
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    equation_file = os.path.join(output_dir, f"hall_of_fame_{timestamp}.csv")
+    
+    # Configuración base de PySR
+    pysr_config = {
         # Evolution parameters (scaled for larger datasets)
-        niterations=500,              # More iterations for complex search
-        populations=30,               # More populations for exploration
-        population_size=50,           # Larger population for diversity
+        'niterations': 1000,              # More iterations for complex search
+        'populations': 30,               # More populations for exploration
+        'population_size': 50,           # Larger population for diversity
         
         # Operators (expanded set for complex patterns)
-        binary_operators=["+", "-", "*", "/"],  # Include division
-        unary_operators=["abs", "sqrt", "square"],  # More unary functions
+        'binary_operators': ["+", "-", "*", "/"],  # Include division
+        'unary_operators': ["abs", "sqrt", "square"],  # More unary functions
         
         # Complexity control (HIGH for large datasets)
-        maxsize=max_complexity,       # High complexity limit
-        parsimony=0.05,              # Lower parsimony for complex expressions
+        'maxsize': max_complexity,       # High complexity limit
+        'parsimony': 0.05,              # Lower parsimony for complex expressions
         
         # Performance (optimized for large datasets)
-        procs=4,                     # Use multiple cores
-        multithreading=True,
-        batching=True,               # Essential for large datasets
-        batch_size=100,              # Larger batches
+        'procs': 4,                     # Use multiple cores
+        'multithreading': True,
+        'batching': True,               # Essential for large datasets
+        'batch_size': 100,              # Larger batches
         
         # Model selection
-        model_selection="best",      # Choose best accuracy
+        'model_selection': "best",      # Choose best accuracy
         
         # Advanced optimization
-        weight_optimize=0.01,        # More weight optimization
-        weight_mutate_constant=0.1,
-        weight_mutate_operator=0.15,
+        'weight_optimize': 0.01,        # More weight optimization
+        'weight_mutate_constant': 0.1,
+        'weight_mutate_operator': 0.15,
         
         # Output control
-        verbosity=1,
-        progress=True,
+        'verbosity': 1,
+        'progress': True,
         
         # Random seed
-        random_state=42,
+        'random_state': 42,
         
         # Extended timeout for complex search
-        timeout_in_seconds=3600,     # 1 hour max
-    )
+        'timeout_in_seconds': 3600,     # 1 hour max
+        
+        # Remove temp_equation_file since it doesn't work for continuous saving
+        # We'll implement manual saving instead
+    }
     
+    # Add custom loss function based on user choice
+    if loss_function == "max_error":
+        pysr_config['loss_function'] = custom_loss_function
+        print(f"🎯 Using MAXIMUM ERROR loss function (minimizes worst predictions)")
+    elif loss_function == "percentile":
+        pysr_config['loss_function'] = lambda y_true, y_pred: percentile_loss_function(y_true, y_pred, 95)
+        print(f"🎯 Using 95th PERCENTILE loss function (minimizes worst 5% of predictions)")
+    elif loss_function == "huber":
+        pysr_config['loss_function'] = lambda y_true, y_pred: huber_loss_function(y_true, y_pred, 1.0)
+        print(f"🎯 Using HUBER loss function (robust to outliers)")
+    else:
+        print(f"🎯 Using default MSE loss function")
+    
+    # Create output directory
+    os.makedirs(output_dir, exist_ok=True)
+    hall_of_fame_path = os.path.join(output_dir, "hall_of_fame.csv")
+    
+    # Proper warm start implementation using PySRRegressor.from_file()
+    if previous_equations_path and os.path.exists(previous_equations_path):
+        try:
+            # Extract the model directory from the equations path
+            # previous_equations_path should be like "outputs/20251002_184214_OEeD6B/hall_of_fame.csv"
+            model_dir = os.path.dirname(previous_equations_path)
+            
+            print(f"🔥 ENTRENAMIENTO INCREMENTAL ACTIVADO")
+            print(f"   📂 Cargando modelo desde: {model_dir}")
+            
+            # Load the previous model using PySRRegressor.from_file()
+            model = PySRRegressor.from_file(model_dir)
+            
+            # Update model parameters for continued training
+            model.niterations = pysr_config['niterations']
+            model.timeout_in_seconds = pysr_config['timeout_in_seconds']
+            
+            # Read previous performance
+            if os.path.exists(previous_equations_path):
+                prev_df = pd.read_csv(previous_equations_path)
+                print(f"   📋 Ecuaciones previas: {len(prev_df)}")
+                print(f"   📊 Mejor pérdida previa: {prev_df['Loss'].min():.6f}")
+                if 'Score' in prev_df.columns:
+                    print(f"   � Mejor R² previo: {prev_df['Score'].max():.4f}")
+            
+            print(f"   💾 Continuando entrenamiento...")
+            
+        except Exception as e:
+            print(f"⚠️ Error cargando modelo previo: {e}")
+            print(f"   Creando modelo nuevo...")
+            model = PySRRegressor(**pysr_config)
+    else:
+        print(f"🆕 ENTRENAMIENTO DESDE CERO")
+        print(f"   💾 Hall of fame: {hall_of_fame_path}")
+        
+        # Configure PySR for high complexity and large datasets
+        model = PySRRegressor(**pysr_config)
     print(f"⚙️  PySR High-Complexity Configuration:")
     print(f"   Iterations: {model.niterations}")
     print(f"   Populations: {model.populations}")
@@ -172,6 +335,8 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
     print(f"   Operators: {model.binary_operators + model.unary_operators}")
     print(f"   Timeout: {model.timeout_in_seconds/60:.0f} minutes")
     print(f"   Batch size: {model.batch_size}")
+    print(f"   Warm start: {'✅ SÍ' if previous_equations_path else '❌ NO'}")
+    print(f"   Modo: {'INCREMENTAL' if previous_equations_path else 'DESDE CERO'}")
     
     print(f"\n🔥 Starting high-complexity symbolic regression...")
     print(f"⏱️  This may take 30-60 minutes with {n_features} features and complexity {max_complexity}...")
@@ -183,15 +348,61 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
     import sys
     sys.stdout.flush()
     
+    # Create a custom callback to save hall of fame during training
+    import threading
+    import time
+    
+    def periodic_save():
+        """Save hall of fame every 5 minutes during training."""
+        while getattr(periodic_save, 'training_active', True):
+            time.sleep(300)  # 5 minutes
+            if hasattr(model, 'equations_') and model.equations_ is not None:
+                try:
+                    temp_path = hall_of_fame_path.replace('.csv', '_temp.csv')
+                    model.equations_.to_csv(temp_path, index=False)
+                    # Atomic move to prevent corruption
+                    import shutil
+                    shutil.move(temp_path, hall_of_fame_path)
+                    print(f"\n💾 Hall of fame auto-saved: {len(model.equations_)} equations")
+                except Exception as e:
+                    print(f"\n⚠️ Auto-save failed: {e}")
+    
+    # Start periodic saving thread
+    periodic_save.training_active = True
+    save_thread = threading.Thread(target=periodic_save, daemon=True)
+    save_thread.start()
+    
     try:
         # Train the model
         model.fit(features, evaluations)
         
         print(f"\n✅ Training completed!")
         
+        # IMPORTANT: Save hall of fame manually after training
+        hall_of_fame_path = os.path.join(output_dir, "hall_of_fame.csv")
+        try:
+            # Save the equations DataFrame to CSV
+            if hasattr(model, 'equations_'):
+                print(f"💾 Saving hall of fame to: {hall_of_fame_path}")
+                model.equations_.to_csv(hall_of_fame_path, index=False)
+                print(f"✅ Hall of fame saved with {len(model.equations_)} equations")
+            else:
+                print(f"⚠️ No equations_ attribute found in model")
+        except Exception as save_error:
+            print(f"❌ Error saving hall of fame: {save_error}")
+            # Try alternative save method
+            try:
+                model.to_file(output_dir)
+                print(f"✅ Model saved to directory: {output_dir}")
+            except Exception as model_save_error:
+                print(f"❌ Error saving model: {model_save_error}")
+        
         # Strong clear before results
         import time
         time.sleep(1)  # Small delay
+        
+        # Stop periodic saving
+        periodic_save.training_active = False
         clear_terminal()
         time.sleep(0.5)
         
@@ -294,6 +505,8 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
         return model
         
     except Exception as e:
+        # Stop periodic saving in case of error
+        periodic_save.training_active = False
         print(f"❌ Training failed: {e}")
         import traceback
         traceback.print_exc()
@@ -313,6 +526,11 @@ def main():
                        help='Maximum complexity (default: 100)')
     parser.add_argument('--timeout', type=int, default=3600,
                        help='Training timeout in seconds (default: 1 hour)')
+    parser.add_argument('--previous', type=str, default=None,
+                       help='Path to previous hall_of_fame.csv for incremental training')
+    parser.add_argument('--loss', type=str, default='mse', 
+                       choices=['mse', 'max_error', 'percentile', 'huber'],
+                       help='Loss function: mse (default), max_error (minimize worst predictions), percentile (minimize worst 5%), huber (robust)')
     
     args = parser.parse_args()
     
@@ -327,12 +545,28 @@ def main():
             print(f"   {npz_file}")
         return 1
     
+    # Configurar directorio de salida
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    if args.previous:
+        output_dir = f"outputs/incremental_{timestamp}"
+        mode = "INCREMENTAL"
+    else:
+        output_dir = f"outputs/fresh_{timestamp}"
+        mode = "DESDE CERO"
+    
+    os.makedirs(output_dir, exist_ok=True)
+    
     print("🚀 High-Complexity Symbolic Regression Trainer")
     print("=" * 70)
     print(f"📂 Dataset: {dataset_path}")
     print(f"🔢 Using ALL features (no selection)")
     print(f"🔥 Max complexity: {args.complexity}")
     print(f"⏱️  Timeout: {args.timeout/60:.0f} minutes")
+    print(f"🎯 Loss function: {args.loss}")
+    print(f"🎯 Modo: {mode}")
+    if args.previous:
+        print(f"📋 Ecuaciones anteriores: {args.previous}")
+    print(f"💾 Salida: {output_dir}")
     print("=" * 70)
     
     # Load data
@@ -341,6 +575,22 @@ def main():
     # Generate feature names
     feature_names = get_all_feature_names()
     print(f"✅ Generated {len(feature_names)} feature names")
+    
+    # Configurar entrenamiento incremental si se especifica
+    previous_equations_path = None
+    if args.previous:
+        # Validar archivo anterior
+        if not os.path.exists(args.previous):
+            print(f"❌ Archivo hall_of_fame anterior no encontrado: {args.previous}")
+            return 1
+        
+        # Cargar y analizar ecuaciones anteriores
+        previous_df = load_previous_hall_of_fame(args.previous)
+        if previous_df is None:
+            return 1
+        
+        # Configurar entrenamiento incremental
+        previous_equations_path = setup_incremental_training(args.previous, output_dir)
     
     # Clear terminal before training starts
     print("\n" + "🔄 Preparing for training..." + "\n")
@@ -356,16 +606,23 @@ def main():
     print("=" * 70)
     
     # Train model with high complexity
-    model = train_high_complexity_sr_model(features, evaluations, feature_names, args.complexity)
+    model = train_high_complexity_sr_model(
+        features, evaluations, feature_names, 
+        args.complexity, previous_equations_path, output_dir, args.loss
+    )
     
     if model:
-        print(f"\n🎉 SUCCESS!")
-        print(f"✅ High-complexity symbolic regression completed")
-        print(f"🧬 Discovered complex chess evaluation formula")
-        print(f"📈 Ready for advanced chess engine integration!")
+        print(f"\n🎉 ¡ÉXITO!")
+        print(f"✅ Entrenamiento de regresión simbólica completado")
+        if args.previous:
+            print(f"🔄 Entrenamiento incremental desde ecuaciones anteriores")
+        print(f"🧬 Fórmula de evaluación de ajedrez descubierta")
+        print(f"� Resultados guardados en: {output_dir}")
+        print(f"📈 ¡Listo para integración avanzada en motor de ajedrez!")
         return 0
     else:
-        print(f"\n❌ Training failed")
+        print(f"\n❌ Entrenamiento falló")
+        print(f"💾 Resultados parciales en: {output_dir}")
         return 1
 
 if __name__ == "__main__":
