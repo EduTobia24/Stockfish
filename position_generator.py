@@ -398,7 +398,7 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Generate diverse chess positions')
-    parser.add_argument('--count', type=int, default=1000,
+    parser.add_argument('--count', type=int, default=10000,
                        help='Number of positions to generate (default: 1000)')
     parser.add_argument('--output', type=str, default='generated_positions',
                        help='Output filename prefix (default: generated_positions)')
