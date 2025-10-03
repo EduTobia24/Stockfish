@@ -126,12 +126,14 @@ class ChessBitboardExtractor:
         
         # Feature 781 reserved for future use (currently 0)
     
-    def extract_dataset_features(self, dataset_path: str) -> Tuple[np.ndarray, np.ndarray]:
+    def extract_dataset_features(self, dataset_path: str, filter_extreme=False, eval_threshold=20.0) -> Tuple[np.ndarray, np.ndarray]:
         """
         Extract bitboard features from entire dataset.
         
         Args:
             dataset_path: Path to JSON dataset file
+            filter_extreme: If True, filter out evaluations beyond ±eval_threshold
+            eval_threshold: Evaluation threshold for filtering (default: 20.0)
             
         Returns:
             Tuple of (features, evaluations)
@@ -146,11 +148,15 @@ class ChessBitboardExtractor:
         n_positions = len(dataset)
         print(f"📊 Processing {n_positions} positions...")
         
-        # Initialize arrays
+        if filter_extreme:
+            print(f"🔍 Filtering evaluations beyond ±{eval_threshold}")
+        
+        # Initialize arrays (with buffer for filtering)
         features = np.zeros((n_positions, 782), dtype=np.float32)
         evaluations = np.zeros(n_positions, dtype=np.float32)
         
         successful_extractions = 0
+        filtered_count = 0
         
         for i, position in enumerate(dataset):
             try:
@@ -169,7 +175,13 @@ class ChessBitboardExtractor:
                     else:
                         eval_score = -20.0 - 0.1 * mate_in  # Black mate: ~-20
                 
-                evaluations[i] = eval_score
+                # Apply filtering if enabled
+                if filter_extreme and (eval_score > eval_threshold or eval_score < -eval_threshold):
+                    filtered_count += 1
+                    continue  # Skip this position
+                
+                evaluations[successful_extractions] = eval_score
+                features[successful_extractions] = self.fen_to_bitboards(fen)
                 successful_extractions += 1
                 
                 if (i + 1) % 100 == 0:
@@ -177,14 +189,16 @@ class ChessBitboardExtractor:
                     
             except Exception as e:
                 print(f"  ⚠️  Error processing position {i+1}: {e}")
-                # Leave features as zeros for failed positions
+                # Skip failed positions
                 
-        print(f"✅ Successfully extracted {successful_extractions}/{n_positions} positions")
+        # Trim arrays to actual size
+        features = features[:successful_extractions]
+        evaluations = evaluations[:successful_extractions]
         
-        # Trim to successful extractions only
-        if successful_extractions < n_positions:
-            features = features[:successful_extractions]
-            evaluations = evaluations[:successful_extractions]
+        print(f"✅ Extracted features from {successful_extractions}/{n_positions} positions")
+        if filter_extreme:
+            print(f"🔍 Filtered out {filtered_count} positions with extreme evaluations (±{eval_threshold})")
+        print(f"📊 Final dataset: {len(features)} positions")
         
         return features, evaluations
     
@@ -295,6 +309,10 @@ def main():
                        help='Output filename prefix')
     parser.add_argument('--test-fen', 
                        help='Test single FEN position (for debugging)')
+    parser.add_argument('--filter-extreme', action='store_true',
+                       help='Filter out evaluations beyond ±threshold (default: ±20)')
+    parser.add_argument('--eval-threshold', type=float, default=20.0,
+                       help='Evaluation threshold for filtering (default: 20.0)')
     
     args = parser.parse_args()
     
@@ -332,10 +350,16 @@ def main():
     print("=" * 60)
     print(f"📂 Dataset: {dataset_path}")
     print(f"📊 Output: {args.output}")
+    if args.filter_extreme:
+        print(f"🔍 Filtering: Remove evaluations beyond ±{args.eval_threshold}")
     print("=" * 60)
     
     # Extract features
-    features, evaluations = extractor.extract_dataset_features(str(dataset_path))
+    features, evaluations = extractor.extract_dataset_features(
+        str(dataset_path), 
+        filter_extreme=args.filter_extreme,
+        eval_threshold=args.eval_threshold
+    )
     
     if len(features) == 0:
         print("❌ No features extracted!")
