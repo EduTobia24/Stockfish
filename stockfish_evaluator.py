@@ -21,13 +21,23 @@ class StockfishEvaluator:
     """Evaluates chess positions using Stockfish engine."""
     
     def __init__(self, stockfish_path: str = None, threads: int = 4, 
-                 hash_size: int = 128, analysis_time: float = 5.0):
-        """Initialize Stockfish evaluator."""
+                 hash_size: int = 128, analysis_time: float = 5.0, analysis_depth: int = None):
+        """Initialize Stockfish evaluator.
+        
+        Args:
+            stockfish_path: Path to Stockfish executable
+            threads: Number of threads to use
+            hash_size: Hash table size in MB
+            analysis_time: Analysis time per position in seconds (used if analysis_depth is None)
+            analysis_depth: Analysis depth per position (if provided, overrides time limit)
+        """
         
         self.stockfish_path = stockfish_path or self.find_stockfish()
         self.threads = threads
         self.hash_size = hash_size
         self.analysis_time = analysis_time
+        self.analysis_depth = analysis_depth
+        self.use_depth_limit = analysis_depth is not None
         self.engine = None
         
         self.stats = {
@@ -75,7 +85,10 @@ class StockfishEvaluator:
             print(f"   Path: {self.stockfish_path}")
             print(f"   Threads: {self.threads}")
             print(f"   Hash: {self.hash_size}MB")
-            print(f"   Analysis time: {self.analysis_time}s per position")
+            if self.use_depth_limit:
+                print(f"   Analysis depth: {self.analysis_depth} per position")
+            else:
+                print(f"   Analysis time: {self.analysis_time}s per position")
             
             self.engine = chess.engine.SimpleEngine.popen_uci(self.stockfish_path)
             
@@ -139,10 +152,15 @@ class StockfishEvaluator:
             
             start_time = time.time()
             
-            # Analyze position
+            # Analyze position with depth or time limit
+            if self.use_depth_limit:
+                limit = chess.engine.Limit(depth=self.analysis_depth)
+            else:
+                limit = chess.engine.Limit(time=self.analysis_time)
+            
             analysis = self.engine.analyse(
                 board, 
-                chess.engine.Limit(time=self.analysis_time),
+                limit,
                 multipv=1
             )
             
@@ -388,6 +406,8 @@ def main():
                        help='Path to Stockfish executable')
     parser.add_argument('--time', type=float, default=5.0,
                        help='Analysis time per position in seconds (default: 5.0)')
+    parser.add_argument('--depth', type=int, default=None,
+                       help='Analysis depth per position (overrides --time if provided)')
     parser.add_argument('--threads', type=int, default=4,
                        help='Number of threads for Stockfish (default: 4)')
     parser.add_argument('--hash', type=int, default=128,
@@ -403,7 +423,10 @@ def main():
     print("=" * 50)
     print(f"📂 Input: {args.input}")
     print(f"💾 Output: {args.output}.{args.format}")
-    print(f"⏱️  Analysis time: {args.time}s per position")
+    if args.depth is not None:
+        print(f"🔍 Analysis depth: {args.depth} per position")
+    else:
+        print(f"⏱️  Analysis time: {args.time}s per position")
     print(f"🧵 Threads: {args.threads}")
     print(f"💾 Hash: {args.hash}MB")
     print(f"💾 Save every: {args.save_interval} positions")
@@ -420,7 +443,8 @@ def main():
             stockfish_path=args.stockfish_path,
             threads=args.threads,
             hash_size=args.hash,
-            analysis_time=args.time
+            analysis_time=args.time,
+            analysis_depth=args.depth
         )
     except Exception as e:
         print(f"❌ Failed to create evaluator: {e}")
