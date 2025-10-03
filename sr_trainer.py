@@ -227,6 +227,27 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
     # Clear before showing configuration
     clear_terminal()
     
+    # Create output directory and ensure it's accessible first
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Ensure the output directory is writable and accessible
+    test_file = os.path.join(output_dir, "test_write.tmp")
+    try:
+        with open(test_file, 'w') as f:
+            f.write("test")
+        os.remove(test_file)
+    except Exception as e:
+        print(f"❌ Output directory not writable: {output_dir}")
+        print(f"   Error: {e}")
+        raise
+    
+    # Use absolute paths to avoid any path resolution issues
+    hall_of_fame_path = os.path.abspath(os.path.join(output_dir, "hall_of_fame.csv"))
+    temp_equations_path = os.path.abspath(os.path.join(output_dir, "temp_equations.csv"))
+    
+    print(f"💾 Hall of fame will be saved to: {hall_of_fame_path}")
+    print(f"📝 Temporary equations: {temp_equations_path}")
+    
     # Configurar archivo de ecuaciones para entrenamiento incremental
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     equation_file = os.path.join(output_dir, f"hall_of_fame_{timestamp}.csv")
@@ -244,10 +265,10 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
         
         # Complexity control (HIGH for large datasets)
         'maxsize': max_complexity,       # High complexity limit
-        'parsimony': 0.05,              # Lower parsimony for complex expressions
+        'parsimony': 0.01,              # Lower parsimony for complex expressions
         
         # Performance (optimized for large datasets)
-        'procs': 4,                     # Use multiple cores
+        'procs': 8,                     # Use multiple cores
         'multithreading': True,
         'batching': True,               # Essential for large datasets
         'batch_size': 100,              # Larger batches
@@ -256,9 +277,10 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
         'model_selection': "best",      # Choose best accuracy
         
         # Advanced optimization
-        'weight_optimize': 0.01,        # More weight optimization
+        'weight_optimize': 0.001,        # More weight optimization
         'weight_mutate_constant': 0.1,
         'weight_mutate_operator': 0.15,
+        'turbo': True,
         
         # Output control
         'verbosity': 1,
@@ -268,10 +290,10 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
         'random_state': 42,
         
         # Extended timeout for complex search
-        'timeout_in_seconds': 3600,     # 1 hour max
+        'timeout_in_seconds': 36000,     # 10 hour max
         
-        # Remove temp_equation_file since it doesn't work for continuous saving
-        # We'll implement manual saving instead
+        # Use the temp equations path we defined above
+        'temp_equation_file': temp_equations_path,
     }
     
     # PySR loss function configuration
@@ -315,10 +337,6 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
     
     # Update config with loss-specific parameters
     pysr_config.update(loss_config)
-    
-    # Create output directory
-    os.makedirs(output_dir, exist_ok=True)
-    hall_of_fame_path = os.path.join(output_dir, "hall_of_fame.csv")
     
     # Proper warm start implementation using PySRRegressor.from_file()
     if previous_equations_path and os.path.exists(previous_equations_path):
@@ -377,29 +395,8 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
     import sys
     sys.stdout.flush()
     
-    # Create a custom callback to save hall of fame during training
-    import threading
-    import time
-    
-    def periodic_save():
-        """Save hall of fame every 5 minutes during training."""
-        while getattr(periodic_save, 'training_active', True):
-            time.sleep(300)  # 5 minutes
-            if hasattr(model, 'equations_') and model.equations_ is not None:
-                try:
-                    temp_path = hall_of_fame_path.replace('.csv', '_temp.csv')
-                    model.equations_.to_csv(temp_path, index=False)
-                    # Atomic move to prevent corruption
-                    import shutil
-                    shutil.move(temp_path, hall_of_fame_path)
-                    print(f"\n💾 Hall of fame auto-saved: {len(model.equations_)} equations")
-                except Exception as e:
-                    print(f"\n⚠️ Auto-save failed: {e}")
-    
-    # Start periodic saving thread
-    periodic_save.training_active = True
-    save_thread = threading.Thread(target=periodic_save, daemon=True)
-    save_thread.start()
+    # Note: Removed custom periodic saving to avoid file conflicts with PySR
+    # PySR will handle saving automatically to its internal equation file
     
     try:
         # Train the model
@@ -407,31 +404,52 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
         
         print(f"\n✅ Training completed!")
         
-        # IMPORTANT: Save hall of fame manually after training
-        hall_of_fame_path = os.path.join(output_dir, "hall_of_fame.csv")
+        # Save hall of fame manually after training (safe now that training is done)
         try:
-            # Save the equations DataFrame to CSV
-            if hasattr(model, 'equations_'):
-                print(f"💾 Saving hall of fame to: {hall_of_fame_path}")
+            # First, try to copy from PySR's temp file if it exists
+            if os.path.exists(temp_equations_path):
+                import shutil
+                shutil.copy2(temp_equations_path, hall_of_fame_path)
+                print(f"✅ Hall of fame copied from PySR temp file: {temp_equations_path}")
+            
+            # Also save from model equations if available
+            elif hasattr(model, 'equations_') and model.equations_ is not None:
+                print(f"💾 Saving hall of fame from model equations: {hall_of_fame_path}")
                 model.equations_.to_csv(hall_of_fame_path, index=False)
                 print(f"✅ Hall of fame saved with {len(model.equations_)} equations")
-            else:
-                print(f"⚠️ No equations_ attribute found in model")
-        except Exception as save_error:
-            print(f"❌ Error saving hall of fame: {save_error}")
-            # Try alternative save method
+            
+            # Try to save the model itself to the directory for future loading
             try:
                 model.to_file(output_dir)
-                print(f"✅ Model saved to directory: {output_dir}")
+                print(f"✅ Complete model saved to directory: {output_dir}")
             except Exception as model_save_error:
-                print(f"❌ Error saving model: {model_save_error}")
+                print(f"⚠️ Could not save complete model: {model_save_error}")
+                
+            # Verify the hall of fame file was created
+            if os.path.exists(hall_of_fame_path):
+                print(f"✅ Verified hall_of_fame.csv exists: {os.path.getsize(hall_of_fame_path)} bytes")
+            else:
+                print(f"❌ hall_of_fame.csv was not created")
+                
+        except Exception as save_error:
+            print(f"❌ Error saving hall of fame: {save_error}")
+            print(f"❌ Attempting emergency save...")
+            
+            # Emergency fallback: save whatever we can
+            try:
+                if hasattr(model, 'equations_') and model.equations_ is not None:
+                    emergency_path = os.path.join(output_dir, f"emergency_equations_{datetime.now().strftime('%H%M%S')}.csv")
+                    model.equations_.to_csv(emergency_path, index=False)
+                    print(f"✅ Emergency save successful: {emergency_path}")
+                else:
+                    print(f"❌ No equations available for emergency save")
+            except Exception as emergency_error:
+                print(f"❌ Emergency save also failed: {emergency_error}")
         
         # Strong clear before results
         import time
         time.sleep(1)  # Small delay
         
-        # Stop periodic saving
-        periodic_save.training_active = False
         clear_terminal()
         time.sleep(0.5)
         
@@ -580,8 +598,6 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
         return model
         
     except Exception as e:
-        # Stop periodic saving in case of error
-        periodic_save.training_active = False
         print(f"❌ Training failed: {e}")
         import traceback
         traceback.print_exc()
