@@ -1,0 +1,16 @@
+{
+  "n_positions": 3657,
+  "n_features": 782,
+  "feature_layout": {
+    "piece_bitboards": "0-767 (12 pieces \u00d7 64 squares)",
+    "game_state": "768-781 (turn, castling, en passant)",
+    "total_features": 782
+  },
+  "sparsity": 0.9661434784706764,
+  "evaluation_stats": {
+    "min": -17.829999923706055,
+    "max": 15.829999923706055,
+    "mean": -0.056817058473825455,
+    "std": 5.814401149749756
+  }
+}

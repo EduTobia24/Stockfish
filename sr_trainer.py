@@ -234,7 +234,7 @@ def train_high_complexity_sr_model(features, evaluations, feature_names, max_com
     # Configuración base de PySR
     pysr_config = {
         # Evolution parameters (scaled for larger datasets)
-        'niterations': 5000,              # More iterations for complex search
+        'niterations': 10000,              # More iterations for complex search
         'populations': 30,               # More populations for exploration
         'population_size': 50,           # Larger population for diversity
         
