@@ -1,5 +1,5 @@
 {
-  "max_complexity": 1000,
+  "max_complexity": 500,
   "niterations": 5000,
   "populations": 20,
   "population_size": 100,
@@ -19,18 +19,22 @@
     "square"
   ],
   "procs": 8,
-  "multithreading": true,
+  "parallelism": "multiprocessing",
   "batching": true,
   "batch_size": 100,
   "turbo": true,
+  "deterministic": false,
+  "optimizer_iterations": 8,
+  "fast_cycle": false,
   "model_selection": "best",
   "parsimony": 0.01,
   "weight_optimize": 0.001,
   "verbosity": 1,
   "progress": true,
-  "save_interval_minutes": 10.0,
+  "save_interval_minutes": 0.5,
   "backup_count": 5,
   "random_state": 42,
-  "warm_start_path": "outputs/20251003_163256_2GVKfO/",
-  "warm_start_mode": "auto"
+  "warm_start_path": null,
+  "warm_start_mode": "auto",
+  "warm_start_increase_complexity": true
 }

@@ -1,3 +1,0 @@
-run_name,timestamp,elapsed_minutes,iteration,best_loss,best_complexity,best_score,best_equation,total_equations,loss_function,max_complexity_limit
-mse_20251005_110745,2025-10-05T11:17:08.773806,9.39,0,,,,,0,mse,150
-mse_20251005_111943,2025-10-05T11:23:57.815706,4.23,0,,,,,0,mse,150

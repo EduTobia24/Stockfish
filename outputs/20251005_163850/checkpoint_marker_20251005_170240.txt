@@ -1,0 +1,5 @@
+Checkpoint at 20251005_170240
+Model state: PySRRegressor
+Has equations: True
+Equations available: True
+Number of equations: 67

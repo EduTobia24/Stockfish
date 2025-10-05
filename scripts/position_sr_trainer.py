@@ -45,14 +45,13 @@ class SRTrainerConfig:
         
         # Constraints (safer bounds to prevent Julia errors)
         self.constraints = {
-            'pow': (-1, 3),      # Limit power operations
             'square': 3,         # Limit square operations  
             'sqrt': 3,           # Limit sqrt operations
             'abs': 2,            # Limit abs operations
         }
         self.nested_constraints = {     # Prevent deeply nested expressions
-            'pow': {'pow': 0, 'square': 0},
-            'square': {'pow': 0, 'square': 0},
+            'square': {'square': 1},     # Limit nested square operations
+            'sqrt': {'sqrt': 1},         # Limit nested sqrt operations
         }
         
         # Performance settings
@@ -61,11 +60,6 @@ class SRTrainerConfig:
         self.batching = True
         self.batch_size = 100
         self.turbo = True
-        
-        # Disable Julia LoopVectorization warnings and bounds issues
-        self.turbo_warn_check_args = False
-        self.julia_optimization = False  # Disable aggressive Julia optimization to prevent bounds errors
-        self.enable_autodiff = False     # Disable autodiff to prevent complexity issues
         
         # Deterministic settings
         self.deterministic = False  # Disable for better performance
@@ -89,6 +83,7 @@ class SRTrainerConfig:
         self.random_state = 42
         
         # Warm start
+        self.warm_start = False  # Enable warm start functionality
         self.warm_start_path = None
         self.warm_start_mode = "auto"  # auto, strict, lenient
         self.warm_start_increase_complexity = True  # Allow complexity to be increased on warm start
@@ -358,7 +353,11 @@ class PositionSRTrainer:
     
     def setup_warm_start(self, output_dir: str) -> Optional[object]:
         """Setup warm start from previous training if configured."""
-        if not self.config.warm_start_path:
+        # Enable warm start if path is provided
+        if self.config.warm_start_path:
+            self.config.warm_start = True
+        
+        if not self.config.warm_start or not self.config.warm_start_path:
             return None
             
         warm_start_path = Path(self.config.warm_start_path)
@@ -398,37 +397,27 @@ class PositionSRTrainer:
             
             # Update model parameters for continued training with new complexity
             old_complexity = getattr(model, 'maxsize', None) or getattr(model, 'max_size', 'unknown')
+            model.niterations = self.config.niterations
+            model.timeout_in_seconds = self.config.timeout_hours * 3600
             
-            if self.config.warm_start_increase_complexity and self.config.max_complexity > old_complexity:
-                # Complexity increase detected - need to create fresh model to avoid bounds errors
-                print(f"🔄 Complexity increase detected: {old_complexity} → {self.config.max_complexity}")
-                print(f"🆕 Creating fresh model with higher complexity to avoid Julia bounds errors")
-                print(f"📋 Previous equations will be used as starting population")
+            if self.config.warm_start_increase_complexity:
+                # Allow complexity to be increased
+                model.maxsize = self.config.max_complexity  # Use maxsize instead of max_size
+                model.max_size = self.config.max_complexity  # Also set max_size for compatibility
                 
-                # Extract equations from the loaded model for seeding
-                if hasattr(model, 'equations_') and model.equations_ is not None:
-                    equations_count = len(model.equations_)
-                    print(f"💡 Will seed new model with {equations_count} previous equations")
-                
-                # Return None to signal we should create a fresh model
-                # The equations will be loaded via PySR's warm_start mechanism
-                return None
-                
-            else:
-                # Same or lower complexity - safe to continue with existing model
-                model.niterations = self.config.niterations
-                model.timeout_in_seconds = self.config.timeout_hours * 3600
+                # Override other complexity-related parameters to allow growth
                 model.parsimony = self.config.parsimony
                 model.weight_optimize = self.config.weight_optimize
                 
-                if not self.config.warm_start_increase_complexity:
-                    print(f"🔒 Keeping original complexity: {old_complexity}")
-                else:
-                    print(f"✅ Complexity unchanged: {old_complexity}")
-                
                 # Ensure complexity can be increased
                 if hasattr(model, 'options') and model.options:
+                    model.options['maxsize'] = self.config.max_complexity
                     model.options['parsimony'] = self.config.parsimony
+                
+                print(f"🔥 Complexity progression: {old_complexity} → {self.config.max_complexity}")
+            else:
+                # Keep original complexity
+                print(f"🔒 Keeping original complexity: {old_complexity}")
             
             print(f"🔥 Warm start configured successfully")
             
@@ -499,11 +488,6 @@ class PositionSRTrainer:
             'batching': self.config.batching,
             'batch_size': self.config.batch_size,
             'turbo': self.config.turbo,
-            
-            # Disable Julia LoopVectorization warnings and bounds issues
-            'turbo_warn_check_args': self.config.turbo_warn_check_args,
-            'julia_optimization': self.config.julia_optimization,
-            'enable_autodiff': self.config.enable_autodiff,
             
             # Model selection
             'model_selection': self.config.model_selection,
