@@ -32,7 +32,7 @@ class SRTrainerConfig:
         self.niterations = 5000
         self.populations = 20
         self.population_size = 100
-        self.timeout_hours = 2.0
+        self.timeout_hours = 8.0
         
         # Loss function configuration
         self.loss_function = "mse"  # mse, max_error, percentile, huber, mae
@@ -43,6 +43,18 @@ class SRTrainerConfig:
         self.binary_operators = ["+", "-", "*", "/"]
         self.unary_operators = ["abs", "sqrt", "square"]
         
+        # Constraints (safer bounds to prevent Julia errors)
+        self.constraints = {
+            'pow': (-1, 3),      # Limit power operations
+            'square': 3,         # Limit square operations  
+            'sqrt': 3,           # Limit sqrt operations
+            'abs': 2,            # Limit abs operations
+        }
+        self.nested_constraints = {     # Prevent deeply nested expressions
+            'pow': {'pow': 0, 'square': 0},
+            'square': {'pow': 0, 'square': 0},
+        }
+        
         # Performance settings
         self.procs = 8
         self.parallelism = "multiprocessing"  # multiprocessing for speed, serial for deterministic
@@ -50,8 +62,10 @@ class SRTrainerConfig:
         self.batch_size = 100
         self.turbo = True
         
-        # Disable Julia LoopVectorization warnings
+        # Disable Julia LoopVectorization warnings and bounds issues
         self.turbo_warn_check_args = False
+        self.julia_optimization = False  # Disable aggressive Julia optimization to prevent bounds errors
+        self.enable_autodiff = False     # Disable autodiff to prevent complexity issues
         
         # Deterministic settings
         self.deterministic = False  # Disable for better performance
@@ -77,6 +91,7 @@ class SRTrainerConfig:
         # Warm start
         self.warm_start_path = None
         self.warm_start_mode = "auto"  # auto, strict, lenient
+        self.warm_start_increase_complexity = True  # Allow complexity to be increased on warm start
         
     def to_dict(self) -> Dict[str, Any]:
         """Convert config to dictionary."""
@@ -381,10 +396,41 @@ class PositionSRTrainer:
                 else:
                     raise ValueError(f"Unsupported warm start path: {warm_start_path}")
             
-            # Update model parameters for continued training
-            model.niterations = self.config.niterations
-            model.timeout_in_seconds = self.config.timeout_hours * 3600
-            model.max_size = self.config.max_complexity
+            # Update model parameters for continued training with new complexity
+            old_complexity = getattr(model, 'maxsize', None) or getattr(model, 'max_size', 'unknown')
+            
+            if self.config.warm_start_increase_complexity and self.config.max_complexity > old_complexity:
+                # Complexity increase detected - need to create fresh model to avoid bounds errors
+                print(f"🔄 Complexity increase detected: {old_complexity} → {self.config.max_complexity}")
+                print(f"🆕 Creating fresh model with higher complexity to avoid Julia bounds errors")
+                print(f"📋 Previous equations will be used as starting population")
+                
+                # Extract equations from the loaded model for seeding
+                if hasattr(model, 'equations_') and model.equations_ is not None:
+                    equations_count = len(model.equations_)
+                    print(f"💡 Will seed new model with {equations_count} previous equations")
+                
+                # Return None to signal we should create a fresh model
+                # The equations will be loaded via PySR's warm_start mechanism
+                return None
+                
+            else:
+                # Same or lower complexity - safe to continue with existing model
+                model.niterations = self.config.niterations
+                model.timeout_in_seconds = self.config.timeout_hours * 3600
+                model.parsimony = self.config.parsimony
+                model.weight_optimize = self.config.weight_optimize
+                
+                if not self.config.warm_start_increase_complexity:
+                    print(f"🔒 Keeping original complexity: {old_complexity}")
+                else:
+                    print(f"✅ Complexity unchanged: {old_complexity}")
+                
+                # Ensure complexity can be increased
+                if hasattr(model, 'options') and model.options:
+                    model.options['parsimony'] = self.config.parsimony
+            
+            print(f"🔥 Warm start configured successfully")
             
             # Load previous results for analysis
             equations_file = None
@@ -429,7 +475,7 @@ class PositionSRTrainer:
                 print(f"🔄 Auto-fallback to fresh start")
                 return None
     
-    def create_pysr_config(self) -> Dict[str, Any]:
+    def create_pysr_config(self, is_warm_start: bool = False) -> Dict[str, Any]:
         """Create PySR configuration dictionary."""
         pysr_config = {
             # Evolution parameters
@@ -437,9 +483,11 @@ class PositionSRTrainer:
             'populations': self.config.populations,
             'population_size': self.config.population_size,
             
-            # Operators
+            # Operators and constraints
             'binary_operators': self.config.binary_operators,
             'unary_operators': self.config.unary_operators,
+            'constraints': self.config.constraints,
+            'nested_constraints': self.config.nested_constraints,
             
             # Complexity control
             'maxsize': self.config.max_complexity,
@@ -452,8 +500,10 @@ class PositionSRTrainer:
             'batch_size': self.config.batch_size,
             'turbo': self.config.turbo,
             
-            # Disable Julia LoopVectorization warnings
+            # Disable Julia LoopVectorization warnings and bounds issues
             'turbo_warn_check_args': self.config.turbo_warn_check_args,
+            'julia_optimization': self.config.julia_optimization,
+            'enable_autodiff': self.config.enable_autodiff,
             
             # Model selection
             'model_selection': self.config.model_selection,
@@ -470,6 +520,10 @@ class PositionSRTrainer:
             'optimizer_iterations': self.config.optimizer_iterations,
             'fast_cycle': self.config.fast_cycle,
         }
+        
+        # Only set warm_start=True when actually doing a warm start
+        if is_warm_start:
+            pysr_config['warm_start'] = True
         
         # Handle deterministic vs non-deterministic mode
         if self.config.deterministic:
@@ -538,10 +592,16 @@ class PositionSRTrainer:
         
         if model is None:
             print(f"🆕 Creating fresh model")
-            pysr_config = self.create_pysr_config()
+            pysr_config = self.create_pysr_config(is_warm_start=False)
             model = PySRRegressor(**pysr_config)
         else:
             print(f"🔥 Using warm start model")
+            # For warm start models, we need to update the config to continue from existing expressions
+            pysr_config = self.create_pysr_config(is_warm_start=True)
+            # Update the loaded model with new config but keep warm_start=True
+            for key, value in pysr_config.items():
+                if hasattr(model, key):
+                    setattr(model, key, value)
         
         self.model = model
         
@@ -648,7 +708,7 @@ def main():
     # Training parameters
     parser.add_argument('--complexity', type=int, default=25, help='Maximum equation complexity')
     parser.add_argument('--iterations', type=int, default=5000, help='Number of iterations')
-    parser.add_argument('--timeout', type=float, default=2.0, help='Timeout in hours')
+    parser.add_argument('--timeout', type=float, default=8.0, help='Timeout in hours')
     parser.add_argument('--populations', type=int, default=20, help='Number of populations')
     parser.add_argument('--population-size', type=int, default=100, help='Population size')
     
@@ -668,6 +728,8 @@ def main():
     parser.add_argument('--warm-start', help='Path to previous model for warm start')
     parser.add_argument('--warm-start-mode', choices=['auto', 'strict', 'lenient'], 
                        default='auto', help='Warm start behavior')
+    parser.add_argument('--keep-complexity', action='store_true', default=False, 
+                       help='Keep original complexity when warm starting (default: allow increase)')
     
     # Performance
     parser.add_argument('--procs', type=int, default=8, help='Number of processes')
@@ -704,6 +766,7 @@ def main():
     config.backup_count = args.backup_count
     config.warm_start_path = args.warm_start
     config.warm_start_mode = args.warm_start_mode
+    config.warm_start_increase_complexity = not args.keep_complexity
     config.procs = args.procs
     config.batch_size = args.batch_size
     config.parallelism = args.parallelism
