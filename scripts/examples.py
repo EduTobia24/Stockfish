@@ -78,19 +78,41 @@ def main():
         f"--save-interval 2 --backup-count 10 --warm-start-mode strict"
     )
     
-    # Example 7: Different loss functions comparison
+    # Example 7: Progress tracking and comparison
+    run_example(
+        "Progress Tracking Enabled",
+        f"{trainer_script} position_dataset.npz --output outputs/tracked_training "
+        f"--track-progress --progress-log tracked_progress.csv --iterations 2000"
+    )
+    
+    run_example(
+        "Multiple Runs for Comparison",
+        f"# Run different loss functions with progress tracking\n"
+        f"   {trainer_script} position_dataset.npz --output outputs/mse_run --loss mse --progress-log mse_progress.csv\n"
+        f"   {trainer_script} position_dataset.npz --output outputs/max_error_run --loss max_error --progress-log max_error_progress.csv\n"
+        f"   {trainer_script} position_dataset.npz --output outputs/huber_run --loss huber --progress-log huber_progress.csv"
+    )
+    
+    # Example 8: Different loss functions comparison
     for loss_func in ['mse', 'max_error', 'percentile', 'huber', 'mae']:
         run_example(
             f"Loss Function: {loss_func.upper()}",
             f"{trainer_script} position_dataset.npz --output outputs/loss_{loss_func} "
-            f"--loss {loss_func} --complexity 30 --iterations 2000 --timeout 1.0"
+            f"--loss {loss_func} --complexity 30 --iterations 2000 --timeout 1.0 "
+            f"--progress-log {loss_func}_progress.csv"
         )
     
-    # Example 8: Performance optimization
+    # Example 9: Performance optimization
     run_example(
         "Performance Optimized",
         f"{trainer_script} position_dataset.npz --output outputs/performance_optimized "
         f"--procs 16 --batch-size 200 --populations 30 --population-size 150"
+    )
+    
+    # Example 10: Analysis of training progress
+    run_example(
+        "Analyze Training Progress",
+        "python scripts/analyze_progress.py outputs/*/training_progress.csv --output analysis_results --plots --report"
     )
     
     # Show the complete workflow
@@ -99,20 +121,21 @@ def main():
     
     workflow_commands = [
         "# 1. Generate position dataset",
-        "python scripts/position_extractor.py positions.fen --output position_dataset.npz",
+        "python scripts/position_extractor.py dataset_evaluations/evaluations_500.json",
         "",
         "# 2. Test the trainer quickly",
-        f"{trainer_script} position_dataset.npz --output outputs/test --complexity 15 --timeout 0.05",
+        f"{trainer_script} dataset_pos_features/evaluations_500_features.npz --output outputs/test --complexity 15 --timeout 0.05",
         "",
-        "# 3. Run full training with max_error loss",
-        f"{trainer_script} position_dataset.npz --output outputs/full_training --loss max_error --config scripts/config_aggressive.json",
+        "# 3. Run multiple training experiments with progress tracking",
+        f"{trainer_script} dataset_pos_features/evaluations_500_features.npz --output outputs/mse_training --loss mse --progress-log mse_progress.csv",
+        f"{trainer_script} dataset_pos_features/evaluations_500_features.npz --output outputs/max_error_training --loss max_error --progress-log max_error_progress.csv",
         "",
         "# 4. Continue training from previous results",
-        f"{trainer_script} position_dataset.npz --output outputs/continued --warm-start outputs/full_training --iterations 5000",
+        f"{trainer_script} dataset_pos_features/evaluations_500_features.npz --output outputs/continued --warm-start outputs/mse_training --iterations 5000",
         "",
-        "# 5. Analyze results",
-        "# Check outputs/continued/training_summary.md",
-        "# Use outputs/continued/hall_of_fame.csv for integration",
+        "# 5. Analyze and compare results",
+        "python scripts/analyze_progress.py outputs/*/training_progress.csv --output comparison_analysis --plots --report",
+        "# Check comparison_analysis/comparison_report.md for detailed analysis",
     ]
     
     for cmd in workflow_commands:
@@ -123,6 +146,8 @@ def main():
     print("✅ Configurable loss functions: mse, max_error, percentile, huber, mae")
     print("✅ Robust periodic saving with backup rotation")
     print("✅ Proper warm starting from previous models")
+    print("✅ Progress tracking with loss/iteration/complexity logging")
+    print("✅ Comparison analysis across multiple training runs")
     print("✅ 73-feature position representation (vs 782 bitboard features)")
     print("✅ Clear progress tracking and result analysis")
     print("✅ JSON configuration files for reproducible experiments")
@@ -135,9 +160,25 @@ def main():
     print("├── training_config.json      # Configuration used")
     print("├── training_metadata.json    # Training metadata")
     print("├── training_summary.md       # Human-readable summary")
+    print("├── training_progress.csv     # Progress log (loss/iteration/complexity)")
     print("├── checkpoint_equations_*.csv # Periodic backups")
     print("├── latest_equations.csv      # Link to latest checkpoint")
     print("└── model files               # Complete PySR model")
+    
+    print(f"\n📊 PROGRESS TRACKING:")
+    print("=" * 80)
+    print("The training_progress.csv file contains:")
+    print("- run_name: Unique identifier for each training run")
+    print("- timestamp: When each measurement was taken")
+    print("- elapsed_minutes: Training time elapsed")
+    print("- iteration: Progress tracking iteration number")
+    print("- best_loss: Current best loss achieved")
+    print("- best_complexity: Complexity of current best equation")
+    print("- best_score: R² score of current best equation")
+    print("- best_equation: Current best equation (truncated if long)")
+    print("- total_equations: Total equations discovered so far")
+    print("- loss_function: Loss function being used")
+    print("- max_complexity_limit: Maximum complexity setting")
     
     print(f"\n💡 TIPS:")
     print("=" * 80)
@@ -146,7 +187,9 @@ def main():
     print("💾 Enable frequent saves for long training runs")
     print("🔥 Use warm start to continue interrupted training")
     print("⚙️ Create custom config files for repeated experiments")
-    print("📈 Monitor outputs/training_name/latest_equations.csv for progress")
+    print("📈 Monitor outputs/training_name/training_progress.csv for real-time progress")
+    print("📊 Use analyze_progress.py to compare multiple training runs")
+    print("🎯 Track progress logs to identify optimal stopping points")
     
     return 0
 

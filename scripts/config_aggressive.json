@@ -21,6 +21,8 @@
   "progress": true,
   "save_interval_minutes": 5,
   "backup_count": 10,
+  "track_progress": true,
+  "progress_log_file": "training_progress.csv",
   "random_state": 42,
   "warm_start_path": null,
   "warm_start_mode": "auto"

@@ -7,7 +7,6 @@ Advanced symbolic regression trainer for position-based chess features with:
 1. Configurable training parameters and loss functions
 2. Robust periodic saving with backup strategies
 3. Proper warm starting from previous models
-4. Clear progress tracking and feature analysis
 
 Feature format: 73 features (64 piece positions + 9 game state)
 """
@@ -29,7 +28,7 @@ class SRTrainerConfig:
     
     def __init__(self):
         # Training parameters
-        self.max_complexity = 50
+        self.max_complexity = 25
         self.niterations = 5000
         self.populations = 20
         self.population_size = 100
@@ -46,10 +45,20 @@ class SRTrainerConfig:
         
         # Performance settings
         self.procs = 8
-        self.multithreading = True
+        self.parallelism = "multiprocessing"  # multiprocessing for speed, serial for deterministic
         self.batching = True
         self.batch_size = 100
         self.turbo = True
+        
+        # Disable Julia LoopVectorization warnings
+        self.turbo_warn_check_args = False
+        
+        # Deterministic settings
+        self.deterministic = False  # Disable for better performance
+        
+        # Julia optimization settings
+        self.optimizer_iterations = 8
+        self.fast_cycle = False
         
         # Model selection
         self.model_selection = "best"
@@ -59,7 +68,7 @@ class SRTrainerConfig:
         # Output and saving
         self.verbosity = 1
         self.progress = True
-        self.save_interval_minutes = 10
+        self.save_interval_minutes = 0.5
         self.backup_count = 5
         
         # Random seed
@@ -134,14 +143,26 @@ class PeriodicSaver:
                     
     def _save_checkpoint(self) -> None:
         """Save current model state with backup rotation."""
-        if not self.model or not hasattr(self.model, 'equations_'):
+        if not self.model:
             return
             
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         try:
+            # Always create a checkpoint marker to show saving is working
+            checkpoint_marker = self.output_dir / f"checkpoint_marker_{timestamp}.txt"
+            
+            with open(checkpoint_marker, 'w') as f:
+                f.write(f"Checkpoint at {timestamp}\n")
+                f.write(f"Model state: {type(self.model).__name__}\n")
+                f.write(f"Has equations: {hasattr(self.model, 'equations_')}\n")
+                if hasattr(self.model, 'equations_'):
+                    f.write(f"Equations available: {self.model.equations_ is not None}\n")
+                    if self.model.equations_ is not None:
+                        f.write(f"Number of equations: {len(self.model.equations_)}\n")
+            
             # Save equations if available
-            if self.model.equations_ is not None and len(self.model.equations_) > 0:
+            if hasattr(self.model, 'equations_') and self.model.equations_ is not None and len(self.model.equations_) > 0:
                 equations_file = self.output_dir / f"checkpoint_equations_{timestamp}.csv"
                 self.model.equations_.to_csv(equations_file, index=False)
                 
@@ -161,18 +182,29 @@ class PeriodicSaver:
                 
                 # Manage backup rotation
                 self._rotate_backups("checkpoint_equations_*.csv")
+            else:
+                # Just log that checkpoint marker was created
+                print(f"🔍 Checkpoint marker saved (equations not yet available)")
+                
+            # Clean up old checkpoint markers (keep only 3 most recent)
+            self._rotate_backups("checkpoint_marker_*.txt", max_files=3)
                 
         except Exception as e:
             print(f"❌ Checkpoint save error: {e}")
+            import traceback
+            print(f"📋 Traceback: {traceback.format_exc()}")
             
-    def _rotate_backups(self, pattern: str) -> None:
+    def _rotate_backups(self, pattern: str, max_files: int = None) -> None:
         """Rotate backup files, keeping only the most recent ones."""
         try:
             backup_files = list(self.output_dir.glob(pattern))
             backup_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
             
+            # Use provided max_files or default backup_count
+            limit = max_files if max_files is not None else self.backup_count
+            
             # Remove old backups beyond the limit
-            for old_file in backup_files[self.backup_count:]:
+            for old_file in backup_files[limit:]:
                 old_file.unlink()
                 
         except Exception as e:
@@ -233,11 +265,42 @@ class PeriodicSaver:
                 best_eq = model.equations_.iloc[0] if len(model.equations_) > 0 else None
                 if best_eq is not None:
                     f.write(f"## Best Result\n")
-                    f.write(f"- **Equation:** `{best_eq['Equation']}`\n")
-                    f.write(f"- **Loss:** {best_eq['Loss']:.6f}\n")
-                    f.write(f"- **Complexity:** {best_eq['Complexity']}\n")
-                    if 'Score' in best_eq:
-                        f.write(f"- **R² Score:** {best_eq['Score']:.6f}\n")
+                    
+                    # Robust column access for summary
+                    equation_text = "N/A"
+                    loss_value = "N/A"
+                    complexity_value = "N/A"
+                    score_value = "N/A"
+                    
+                    # Try different equation column names
+                    for eq_col in ['Equation', 'equation', 'sympy_format']:
+                        if eq_col in best_eq.index:
+                            equation_text = str(best_eq[eq_col])
+                            break
+                    
+                    # Try different loss column names
+                    for loss_col in ['Loss', 'loss', 'mse']:
+                        if loss_col in best_eq.index:
+                            loss_value = f"{best_eq[loss_col]:.6f}"
+                            break
+                    
+                    # Try different complexity column names
+                    for comp_col in ['Complexity', 'complexity', 'size']:
+                        if comp_col in best_eq.index:
+                            complexity_value = str(best_eq[comp_col])
+                            break
+                    
+                    # Try different score column names
+                    for score_col in ['Score', 'score', 'r2', 'R2']:
+                        if score_col in best_eq.index:
+                            score_value = f"{best_eq[score_col]:.6f}"
+                            break
+                    
+                    f.write(f"- **Equation:** `{equation_text}`\n")
+                    f.write(f"- **Loss:** {loss_value}\n")
+                    f.write(f"- **Complexity:** {complexity_value}\n")
+                    if score_value != "N/A":
+                        f.write(f"- **R² Score:** {score_value}\n")
                     f.write(f"\n")
 
 class PositionSRTrainer:
@@ -296,16 +359,27 @@ class PositionSRTrainer:
             
             print(f"🔥 Setting up warm start from: {warm_start_path}")
             
-            # Try to load previous model
-            if warm_start_path.is_dir():
-                # Load from directory
-                model = PySRRegressor.from_file(str(warm_start_path))
-            elif warm_start_path.suffix == '.csv':
-                # Load from hall of fame file
-                model_dir = warm_start_path.parent
-                model = PySRRegressor.from_file(str(model_dir))
-            else:
-                raise ValueError(f"Unsupported warm start path: {warm_start_path}")
+            # Try to load previous model with better error handling
+            try:
+                if warm_start_path.is_dir():
+                    # Load from directory - PySR expects the directory itself
+                    model = PySRRegressor.from_file(run_directory=str(warm_start_path))
+                elif warm_start_path.suffix == '.csv':
+                    # Load from hall of fame file - use parent directory
+                    model_dir = warm_start_path.parent
+                    model = PySRRegressor.from_file(run_directory=str(model_dir))
+                else:
+                    raise ValueError(f"Unsupported warm start path: {warm_start_path}")
+            except TypeError as e:
+                # Handle older PySR versions that don't use run_directory
+                print(f"⚠️ New PySR API failed, trying legacy method: {e}")
+                if warm_start_path.is_dir():
+                    model = PySRRegressor.from_file(str(warm_start_path))
+                elif warm_start_path.suffix == '.csv':
+                    model_dir = warm_start_path.parent
+                    model = PySRRegressor.from_file(str(model_dir))
+                else:
+                    raise ValueError(f"Unsupported warm start path: {warm_start_path}")
             
             # Update model parameters for continued training
             model.niterations = self.config.niterations
@@ -322,9 +396,24 @@ class PositionSRTrainer:
             if equations_file and equations_file.exists():
                 prev_equations = pd.read_csv(equations_file)
                 print(f"📋 Previous training had {len(prev_equations)} equations")
-                print(f"📊 Best previous loss: {prev_equations['Loss'].min():.6f}")
-                if 'Score' in prev_equations.columns:
-                    print(f"🎯 Best previous R²: {prev_equations['Score'].max():.6f}")
+                
+                # Robust loss column access
+                best_loss = "N/A"
+                best_score = "N/A"
+                
+                for loss_col in ['Loss', 'loss', 'mse']:
+                    if loss_col in prev_equations.columns:
+                        best_loss = f"{prev_equations[loss_col].min():.6f}"
+                        break
+                
+                for score_col in ['Score', 'score', 'r2', 'R2']:
+                    if score_col in prev_equations.columns:
+                        best_score = f"{prev_equations[score_col].max():.6f}"
+                        break
+                
+                print(f"📊 Best previous loss: {best_loss}")
+                if best_score != "N/A":
+                    print(f"🎯 Best previous R²: {best_score}")
             
             print(f"✅ Warm start configured successfully")
             return model
@@ -356,12 +445,15 @@ class PositionSRTrainer:
             'maxsize': self.config.max_complexity,
             'parsimony': self.config.parsimony,
             
-            # Performance
+            # Performance - optimized for speed
             'procs': self.config.procs,
-            'multithreading': self.config.multithreading,
+            'parallelism': self.config.parallelism,
             'batching': self.config.batching,
             'batch_size': self.config.batch_size,
             'turbo': self.config.turbo,
+            
+            # Disable Julia LoopVectorization warnings
+            'turbo_warn_check_args': self.config.turbo_warn_check_args,
             
             # Model selection
             'model_selection': self.config.model_selection,
@@ -374,9 +466,24 @@ class PositionSRTrainer:
             # Timeout
             'timeout_in_seconds': self.config.timeout_hours * 3600,
             
-            # Random seed
-            'random_state': self.config.random_state,
+            # Julia optimization
+            'optimizer_iterations': self.config.optimizer_iterations,
+            'fast_cycle': self.config.fast_cycle,
         }
+        
+        # Handle deterministic vs non-deterministic mode
+        if self.config.deterministic:
+            # Deterministic mode: set random_state and force serial
+            pysr_config.update({
+                'random_state': self.config.random_state,
+                'deterministic': True,
+                'parallelism': 'serial'
+            })
+        else:
+            # Non-deterministic mode for speed (no random_state to avoid warnings)
+            pysr_config.update({
+                'deterministic': False,
+            })
         
         # Loss function specific adjustments
         if self.config.loss_function == "max_error":
@@ -412,9 +519,12 @@ class PositionSRTrainer:
             print("❌ PySR not available. Install with: pip install pysr")
             return None
         
-        # Setup output directory
-        output_path = Path(output_dir)
+        # Setup output directory with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_path = Path(output_dir) / timestamp
         output_path.mkdir(parents=True, exist_ok=True)
+        
+        print(f"📁 Training output directory: {output_path}")
         
         # Setup periodic saver
         self.saver = PeriodicSaver(
@@ -536,7 +646,7 @@ def main():
     parser.add_argument('--output', '-o', required=True, help='Output directory for results')
     
     # Training parameters
-    parser.add_argument('--complexity', type=int, default=50, help='Maximum equation complexity')
+    parser.add_argument('--complexity', type=int, default=25, help='Maximum equation complexity')
     parser.add_argument('--iterations', type=int, default=5000, help='Number of iterations')
     parser.add_argument('--timeout', type=float, default=2.0, help='Timeout in hours')
     parser.add_argument('--populations', type=int, default=20, help='Number of populations')
@@ -549,8 +659,10 @@ def main():
     parser.add_argument('--huber-delta', type=float, default=1.0, help='Delta parameter for Huber loss')
     
     # Saving options
-    parser.add_argument('--save-interval', type=float, default=10.0, help='Save interval in minutes')
+    parser.add_argument('--save-interval', type=float, default=0.5, help='Save interval in minutes')
     parser.add_argument('--backup-count', type=int, default=5, help='Number of backup files to keep')
+    
+
     
     # Warm start
     parser.add_argument('--warm-start', help='Path to previous model for warm start')
@@ -560,6 +672,10 @@ def main():
     # Performance
     parser.add_argument('--procs', type=int, default=8, help='Number of processes')
     parser.add_argument('--batch-size', type=int, default=100, help='Batch size')
+    parser.add_argument('--parallelism', choices=['multiprocessing', 'multithreading', 'serial'],
+                       default='multiprocessing', help='Parallelism mode (multiprocessing for speed)')
+    parser.add_argument('--deterministic', action='store_true', default=False, help='Enable deterministic search (slower, requires serial parallelism)')
+    parser.add_argument('--fast-mode', action='store_true', default=True, help='Use multiprocessing for speed (default, non-deterministic)')
     
     # Configuration file
     parser.add_argument('--config', help='Load configuration from JSON file')
@@ -590,6 +706,16 @@ def main():
     config.warm_start_mode = args.warm_start_mode
     config.procs = args.procs
     config.batch_size = args.batch_size
+    config.parallelism = args.parallelism
+    config.deterministic = args.deterministic
+    
+    # Handle deterministic mode override (forces serial)
+    if args.deterministic:
+        print("� Deterministic mode enabled: using serial parallelism (slower but reproducible)")
+        config.parallelism = 'serial'
+        config.deterministic = True
+    
+
     
     # Save config and exit if requested
     if args.save_config:
