@@ -30,7 +30,7 @@ class SRTrainerConfig:
         # Training parameters
         self.max_complexity = 25
         self.niterations = 5000
-        self.populations = 20
+        self.populations = 100
         self.population_size = 100
         self.timeout_hours = 8.0
         
@@ -58,8 +58,8 @@ class SRTrainerConfig:
         self.procs = 8
         self.parallelism = "multiprocessing"  # multiprocessing for speed, serial for deterministic
         self.batching = True
-        self.batch_size = 100
-        self.turbo = True
+        self.batch_size = 20
+        self.turbo = False
         
         # Deterministic settings
         self.deterministic = False  # Disable for better performance
