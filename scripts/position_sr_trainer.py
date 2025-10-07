@@ -87,6 +87,7 @@ class SRTrainerConfig:
         self.warm_start_path = None
         self.warm_start_mode = "auto"  # auto, strict, lenient
         self.warm_start_increase_complexity = True  # Allow complexity to be increased on warm start
+        self.warm_start_allow_population_changes = True  # Allow population count changes on warm start
         
     def to_dict(self) -> Dict[str, Any]:
         """Convert config to dictionary."""
@@ -408,8 +409,37 @@ class PositionSRTrainer:
                 else:
                     raise ValueError(f"Unsupported warm start path: {warm_start_path}")
             
-            # Update model parameters for continued training with new complexity
+            # Update model parameters for continued training with new complexity and populations
             old_complexity = getattr(model, 'maxsize', None) or getattr(model, 'max_size', 'unknown')
+            old_populations = getattr(model, 'populations', None) or getattr(model, 'npop', 20)  # Default to 20 if not found
+            
+            # Check for parameter changes that would require a fresh model
+            complexity_changed = self.config.warm_start_increase_complexity and self.config.max_complexity > old_complexity
+            populations_changed = self.config.populations != old_populations
+            
+            # Apply population change policy
+            if populations_changed and not self.config.warm_start_allow_population_changes:
+                print(f"⚠️ Population count mismatch: model has {old_populations}, requested {self.config.populations}")
+                print(f"🔒 Using model's population count (warm_start_allow_population_changes=False)")
+                self.config.populations = old_populations  # Override requested populations
+                populations_changed = False  # No longer a change
+            
+            if complexity_changed or populations_changed:
+                print(f"🔄 Parameter changes detected:")
+                if complexity_changed:
+                    print(f"   Complexity: {old_complexity} → {self.config.max_complexity}")
+                if populations_changed:
+                    print(f"   Populations: {old_populations} → {self.config.populations} (adaptive population scaling)")
+                
+                print(f"🆕 Creating fresh model with updated parameters to avoid Julia bounds errors")
+                print(f"⚠️ Previous equations will NOT be loaded to prevent population/complexity mismatches")
+                
+                # Return None to signal we should create a completely fresh model
+                # DO NOT use warm start to avoid parameter mismatch errors
+                return None
+            
+            # No parameter changes - safe to continue with existing model
+            
             model.niterations = self.config.niterations
             model.timeout_in_seconds = self.config.timeout_hours * 3600
             
@@ -522,8 +552,8 @@ class PositionSRTrainer:
             'fast_cycle': self.config.fast_cycle,
         }
         
-        # Only set warm_start=True when actually doing a warm start
-        if is_warm_start:
+        # Only set warm_start=True when actually doing a warm start AND warm_start_path exists
+        if is_warm_start and self.config.warm_start_path:
             pysr_config['warm_start'] = True
         
         # Handle deterministic vs non-deterministic mode
@@ -592,9 +622,18 @@ class PositionSRTrainer:
         model = self.setup_warm_start(str(output_path))
         
         if model is None:
-            print(f"🆕 Creating fresh model")
+            print(f"🆕 Creating fresh model (no warm start)")
+            # When creating a fresh model due to parameter changes, disable warm start completely
+            # to avoid Julia bounds errors with population/complexity mismatches
+            original_warm_start_path = self.config.warm_start_path
+            self.config.warm_start_path = None  # Temporarily disable warm start
+            
             pysr_config = self.create_pysr_config(is_warm_start=False)
             model = PySRRegressor(**pysr_config)
+            
+            # Restore original warm start path for logging
+            self.config.warm_start_path = original_warm_start_path
+            print(f"🔒 Warm start disabled to prevent parameter mismatch errors")
         else:
             print(f"🔥 Using warm start model")
             # For warm start models, we need to update the config to continue from existing expressions
