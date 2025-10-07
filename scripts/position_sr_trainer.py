@@ -230,12 +230,25 @@ class PeriodicSaver:
             model.equations_.to_csv(equations_file, index=False)
             print(f"✅ Final equations saved: {len(model.equations_)} entries")
         
-        # Save complete model
+        # Save complete model with better error handling
         try:
-            model.to_file(str(self.output_dir))
-            print(f"✅ Complete model saved to: {self.output_dir}")
+            # Use a more specific output path to avoid conflicts
+            model_output_path = self.output_dir / "model"
+            model_output_path.mkdir(exist_ok=True)
+            
+            # Save with explicit path
+            model.to_file(str(model_output_path), "hall_of_fame.csv")
+            print(f"✅ Complete model saved to: {model_output_path}")
         except Exception as e:
             print(f"⚠️ Model save warning: {e}")
+            # Try alternative save method
+            try:
+                equations_backup = self.output_dir / "equations_backup.csv"
+                if hasattr(model, 'equations_') and model.equations_ is not None:
+                    model.equations_.to_csv(equations_backup, index=False)
+                    print(f"✅ Backup equations saved to: {equations_backup}")
+            except Exception as e2:
+                print(f"❌ Backup save also failed: {e2}")
         
         # Save configuration
         config_file = self.output_dir / "training_config.json"
@@ -496,6 +509,10 @@ class PositionSRTrainer:
             # Output control
             'verbosity': self.config.verbosity,
             'progress': self.config.progress,
+            
+            # File handling - prevent backup file issues
+            'delete_tempfiles': True,
+            'update': False,  # Disable update mode to prevent .bak files
             
             # Timeout
             'timeout_in_seconds': self.config.timeout_hours * 3600,
