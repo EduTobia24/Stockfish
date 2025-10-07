@@ -1,0 +1,4 @@
+Checkpoint at 20251007_211627
+Model state: PySRRegressor
+Has equations: True
+Equations available: False

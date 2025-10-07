@@ -1,0 +1,8 @@
+{
+  "training_time_seconds": 6597.285701751709,
+  "n_positions": 6307,
+  "n_features": 73,
+  "eval_range": "-14.95 to +15.00",
+  "loss_function": "mse",
+  "warm_start_used": false
+}
